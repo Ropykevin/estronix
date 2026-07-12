@@ -130,6 +130,30 @@ server {
 NGINX
 
 ln -sf "${NGINX_CONF}" "/etc/nginx/sites-enabled/${DOMAIN}"
+
+DEFAULT_SITE="/etc/nginx/sites-available/estronix-default"
+cat > "${DEFAULT_SITE}" <<DEFAULT
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+
+    client_max_body_size 64M;
+
+    location / {
+        proxy_pass http://127.0.0.1:${APP_PORT};
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_read_timeout 120s;
+    }
+}
+DEFAULT
+ln -sf "${DEFAULT_SITE}" "/etc/nginx/sites-enabled/estronix-default"
+rm -f /etc/nginx/sites-enabled/default
+
 nginx -t
 systemctl reload nginx
 
