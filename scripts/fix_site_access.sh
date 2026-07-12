@@ -103,15 +103,17 @@ else
 fi
 
 echo ""
-echo "==> Firewall (allow HTTP/HTTPS only)..."
+echo "==> Firewall..."
 ufw allow OpenSSH || true
 ufw allow 'Nginx Full' || true
+ufw allow "${APP_PORT}/tcp" || true
 ufw --force enable || true
 
 echo ""
 echo "Done."
-echo "  Domain : http://${DOMAIN}"
-echo "  IP     : http://$(curl -4 -s ifconfig.me 2>/dev/null || echo 'YOUR_VPS_IP')/"
+echo "  Domain   : http://${DOMAIN}"
+echo "  IP :80   : http://$(curl -4 -s ifconfig.me 2>/dev/null || echo 'YOUR_VPS_IP')/"
+echo "  IP :${APP_PORT} : http://$(curl -4 -s ifconfig.me 2>/dev/null || echo 'YOUR_VPS_IP'):${APP_PORT}/"
 echo ""
-echo "Do NOT use :${APP_PORT} in the browser — that port is internal."
-echo "HTTPS    : sudo INSTALL_SSL=true bash mypostgresql.sh"
+echo "HTTPS: sudo INSTALL_SSL=true bash mypostgresql.sh"
+echo "If still unreachable, open port ${APP_PORT} in your VPS provider firewall/security group."

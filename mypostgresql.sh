@@ -171,6 +171,12 @@ echo ""
 echo "Nginx proxy: http://${DOMAIN} -> http://127.0.0.1:${APP_PORT}"
 echo "Deploy app:  bash deployment.sh"
 
+echo "==> Opening firewall ports (80, 443, ${APP_PORT})..."
+ufw allow OpenSSH || true
+ufw allow 'Nginx Full' || true
+ufw allow "${APP_PORT}/tcp" || true
+ufw --force enable || true
+
 if [[ "${INSTALL_SSL:-false}" == "true" ]]; then
   echo "==> Installing Let's Encrypt certificate..."
   apt-get install -y certbot python3-certbot-nginx
