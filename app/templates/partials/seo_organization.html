@@ -1,0 +1,23 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": {{ app_name | tojson }},
+  "url": {{ app_url | tojson }},
+  "logo": {{ url_for('static', filename='images/og-default.jpg', _external=True) | tojson }},
+  "description": "Kenya's premium electronics store. Genuine smartphones, laptops, accessories with M-Pesa payments and nationwide delivery.",
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "KE",
+    "addressLocality": "Nairobi"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": {{ contact_phone | tojson }},
+    "contactType": "customer service",
+    "email": {{ contact_email | tojson }},
+    "availableLanguage": ["English", "Swahili"]
+  },
+  "sameAs": []
+}
+</script>

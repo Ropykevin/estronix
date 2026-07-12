@@ -1,0 +1,13 @@
+{% extends "admin/base.html" %}
+{% block title %}Inventory{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Inventory Report</h1>
+<div class="row g-3 mb-4">
+<div class="col-md-3"><div class="card"><div class="card-body"><small>In Stock</small><h4>{{ report.in_stock }}</h4></div></div></div>
+<div class="col-md-3"><div class="card"><div class="card-body"><small>Low Stock</small><h4 class="text-warning">{{ report.low_stock }}</h4></div></div></div>
+<div class="col-md-3"><div class="card"><div class="card-body"><small>Out of Stock</small><h4 class="text-danger">{{ report.out_of_stock }}</h4></div></div></div>
+<div class="col-md-3"><div class="card"><div class="card-body"><small>Total Units</small><h4>{{ report.total_units }}</h4></div></div></div>
+</div>
+<table class="table bg-white shadow-sm"><thead><tr><th>Product</th><th>SKU</th><th>Stock</th><th>Status</th></tr></thead>
+<tbody>{% for p in report.products %}<tr><td>{{ p.name }}</td><td>{{ p.sku }}</td><td>{{ p.stock_quantity }}</td><td>{{ p.status.value }}</td></tr>{% endfor %}</tbody></table>
+{% endblock %}

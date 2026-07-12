@@ -1,0 +1,7 @@
+{% extends "admin/base.html" %}
+{% block title %}Categories{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-4"><h1 class="h3">Categories</h1><a href="{{ url_for('admin.create_category') }}" class="btn btn-primary">Add Category</a></div>
+<table class="table bg-white shadow-sm"><thead><tr><th>Name</th><th>Slug</th><th>Parent</th><th>Active</th></tr></thead>
+<tbody>{% for c in categories %}<tr><td>{{ c.name }}</td><td>{{ c.slug }}</td><td>{{ c.parent.name if c.parent else '—' }}</td><td>{{ 'Yes' if c.is_active else 'No' }}</td></tr>{% endfor %}</tbody></table>
+{% endblock %}

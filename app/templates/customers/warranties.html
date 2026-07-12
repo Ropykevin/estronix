@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-premium py-4">
+    <div class="row g-4">
+        <div class="col-lg-3">{% include "customers/_sidebar.html" %}</div>
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 class="h3 mb-0">Warranty Tracker</h1>
+                <a href="{{ url_for('customers.register_warranty') }}" class="btn btn-primary btn-sm">Register Serial</a>
+            </div>
+            <h2 class="h5">Active</h2>
+            {% if active %}<div class="table-responsive mb-4"><table class="table table-sm"><thead><tr><th>Number</th><th>Product</th><th>Expires</th><th>Status</th></tr></thead>
+            <tbody>{% for w in active %}<tr><td>{{ w.warranty_number }}</td><td>{{ w.product_name }}</td><td>{{ w.expiry_date.strftime('%Y-%m-%d') if w.expiry_date else '—' }}</td><td>{{ w.status.value }}</td></tr>{% endfor %}</tbody></table></div>
+            {% else %}<p class="text-muted">No active warranties.</p>{% endif %}
+            <h2 class="h5">Expired</h2>
+            {% if expired %}<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Number</th><th>Product</th><th>Expired</th></tr></thead>
+            <tbody>{% for w in expired %}<tr><td>{{ w.warranty_number }}</td><td>{{ w.product_name }}</td><td>{{ w.expiry_date.strftime('%Y-%m-%d') if w.expiry_date else '—' }}</td></tr>{% endfor %}</tbody></table></div>
+            {% else %}<p class="text-muted">No expired warranties.</p>{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

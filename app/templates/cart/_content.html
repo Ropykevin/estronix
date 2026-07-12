@@ -1,0 +1,95 @@
+{% if cart_items %}
+{% from "macros.html" import render_whatsapp_order_btn %}
+<div class="row g-4" id="cartPageContent">
+    <div class="col-lg-8">
+        <div class="cart-table-wrap">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Product</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th><span class="visually-hidden">Remove</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in cart_items %}
+                    {% set product = item.product if item.product is defined else item['product'] %}
+                    {% set qty = item.quantity if item.quantity is defined else item['quantity'] %}
+                    {% set line_total = item.line_total if item.line_total is defined else (product.effective_price * qty) %}
+                    <tr data-cart-row="{{ product.id }}">
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="{{ product.primary_image.image_url if product.primary_image else url_for('static', filename='images/placeholder-product.svg') }}"
+                                     class="cart-product-thumb" alt="{{ product.name }}">
+                                <div>
+                                    <a href="{{ url_for('products.product_detail', slug=product.slug) }}" class="fw-semibold text-decoration-none" style="color: var(--color-navy);">{{ product.name }}</a>
+                                    <br><small class="text-muted">{{ product.brand }} · {{ product.sku }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-muted">KES {{ "{:,.0f}".format(product.effective_price) }}</td>
+                        <td>
+                            <form action="{{ url_for('cart.update_cart', product_id=product.id) }}" method="POST" class="cart-update-form d-flex gap-1">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="number" name="quantity" value="{{ qty }}" min="1" max="{{ product.stock_quantity }}" class="form-control form-control-sm" style="width: 72px;" aria-label="Quantity for {{ product.name }}">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Update</button>
+                            </form>
+                        </td>
+                        <td class="fw-bold cart-line-total">KES {{ "{:,.0f}".format(line_total) }}</td>
+                        <td>
+                            <form action="{{ url_for('cart.remove_from_cart', product_id=product.id) }}" method="POST" class="cart-remove-form">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-link text-danger p-0" aria-label="Remove {{ product.name }} from cart"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="order-summary-card">
+            <h5 class="mb-4" style="font-family: var(--font-heading); font-weight: 700;">Order Summary</h5>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Subtotal</span>
+                <span class="fw-semibold" data-cart-subtotal>KES {{ "{:,.0f}".format(subtotal) }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Shipping</span>
+                <span class="text-muted small">From checkout · Nairobi CBD free</span>
+            </div>
+            <p class="text-muted small mb-3">Free delivery {{ free_delivery_area }}. KES 500 shipping fee for all other areas.</p>
+            <hr>
+            <div class="d-flex justify-content-between mb-4">
+                <span class="fw-bold">Subtotal</span>
+                <span class="fw-bold fs-5" style="color: var(--color-navy);" data-cart-subtotal-total>KES {{ "{:,.0f}".format(subtotal) }}</span>
+            </div>
+            <a href="{{ url_for('orders.checkout') }}" class="btn-premium btn-premium-primary w-100 mb-2">
+                Proceed to Checkout <i class="bi bi-arrow-right"></i>
+            </a>
+            {{ render_whatsapp_order_btn(whatsapp_cart_url, block=true, class='mb-2') }}
+            <a href="{{ url_for('products.list_products') }}" class="btn-premium btn-premium-secondary w-100">
+                Continue Shopping
+            </a>
+            <div class="checkout-trust mt-4 pt-0 border-0">
+                <div class="checkout-trust-item"><i class="bi bi-lock-fill"></i> Secure checkout</div>
+                <div class="checkout-trust-item"><i class="bi bi-whatsapp"></i> Order via WhatsApp</div>
+                <div class="checkout-trust-item"><i class="bi bi-phone"></i> M-Pesa accepted</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="empty-state fade-up" id="cartPageContent">
+    <div class="empty-state-icon"><i class="bi bi-bag"></i></div>
+    <h3 class="section-title">Your cart is empty</h3>
+    <p class="text-muted mb-4">Discover our latest electronics and add items to get started.</p>
+    <a href="{{ url_for('products.list_products') }}" class="btn-premium btn-premium-primary btn-premium-lg">Start Shopping</a>
+</div>
+{% endif %}

@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+{% block title %}Trade-In {{ trade_in.reference_number }}{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">{{ trade_in.device_brand }} {{ trade_in.device_model }}</h1>
+<p>Condition: {{ trade_in.condition.value }} · Estimate: KES {{ "{:,.0f}".format(trade_in.estimated_value or 0) }} · Status: {{ trade_in.status.value }}</p>
+{% if trade_in.condition_notes %}<p>{{ trade_in.condition_notes }}</p>{% endif %}
+<form method="POST" class="col-md-6">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="action" value="offer">
+    <div class="mb-3"><label class="form-label">Final Offer (KES)</label><input type="number" name="offer_amount" class="form-control" required step="0.01"></div>
+    <div class="mb-3"><label class="form-label">Notes</label><textarea name="admin_notes" class="form-control"></textarea></div>
+    <button class="btn btn-primary me-2">Send Offer</button>
+</form>
+<form method="POST" class="mt-2"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="action" value="reject"><button class="btn btn-outline-danger btn-sm">Reject</button></form>
+{% endblock %}

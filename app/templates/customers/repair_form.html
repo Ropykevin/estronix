@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-premium py-4">
+    <div class="row g-4">
+        <div class="col-lg-3">{% include "customers/_sidebar.html" %}</div>
+        <div class="col-lg-9">
+            <h1 class="h3 mb-4">Submit Repair Request</h1>
+            <form method="POST" enctype="multipart/form-data" class="col-md-8">{{ form.hidden_tag() }}
+                <div class="mb-3">{{ form.product_name.label(class="form-label") }}{{ form.product_name(class="form-control") }}</div>
+                <div class="mb-3">{{ form.brand.label(class="form-label") }}{{ form.brand(class="form-control") }}</div>
+                <div class="mb-3">{{ form.serial_number.label(class="form-label") }}{{ form.serial_number(class="form-control") }}</div>
+                <div class="mb-3">{{ form.issue_description.label(class="form-label") }}{{ form.issue_description(class="form-control", rows=5) }}</div>
+                <div class="mb-3"><label class="form-label">Photos</label><input type="file" name="images" class="form-control" multiple accept="image/*"></div>
+                {{ form.submit(class="btn btn-primary") }}
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

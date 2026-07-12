@@ -1,0 +1,12 @@
+{% extends "admin/base.html" %}
+{% block title %}Update Stock{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Update Stock — {{ product.name }}</h1>
+<p>Current stock: <strong>{{ product.stock_quantity }}</strong></p>
+<form method="POST" class="col-md-4">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">{{ form.quantity.label(class="form-label") }}{{ form.quantity(class="form-control") }}</div>
+    <div class="mb-3">{{ form.operation.label(class="form-label") }}{{ form.operation(class="form-select") }}</div>
+    {{ form.submit(class="btn btn-primary") }}
+</form>
+{% endblock %}

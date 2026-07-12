@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4"><div class="row"><div class="col-md-3">{% include "customers/_sidebar.html" %}</div>
+<div class="col-md-9"><h1 class="h3">My Orders</h1>
+{% if orders %}<div class="table-responsive"><table class="table"><thead><tr><th>Order</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr></thead>
+<tbody>{% for o in orders %}<tr><td>{{ o.order_number }}</td><td>{{ o.created_at.strftime('%Y-%m-%d') }}</td><td>KES {{ "{:,.0f}".format(o.total_amount) }}</td><td><span class="badge bg-secondary">{{ o.status.value }}</span></td><td><a href="{{ url_for('orders.order_detail', order_number=o.order_number) }}" class="btn btn-sm btn-outline-primary">View</a></td></tr>{% endfor %}</tbody></table></div>
+{% else %}<p class="text-muted">No orders yet.</p>{% endif %}
+</div></div></div>
+{% endblock %}

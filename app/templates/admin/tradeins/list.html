@@ -1,0 +1,8 @@
+{% extends "admin/base.html" %}
+{% block title %}Trade-Ins{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Trade-In Requests</h1>
+<table class="table table-striped"><thead><tr><th>Reference</th><th>Customer</th><th>Device</th><th>Estimate</th><th>Status</th><th></th></tr></thead>
+<tbody>{% for t in trade_ins %}<tr><td>{{ t.reference_number }}</td><td>{{ t.user.email }}</td><td>{{ t.device_brand }} {{ t.device_model }}</td><td>KES {{ "{:,.0f}".format(t.estimated_value or 0) }}</td><td>{{ t.status.value }}</td>
+<td><a href="{{ url_for('admin.trade_in_detail', trade_in_id=t.id) }}" class="btn btn-sm btn-outline-primary">Review</a></td></tr>{% endfor %}</tbody></table>
+{% endblock %}

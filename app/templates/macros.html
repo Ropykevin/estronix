@@ -1,0 +1,105 @@
+{% macro render_product_card(product, show_new_badge=false) %}
+<div class="col-12 col-sm-6 col-lg-3">
+    <article class="product-card-premium" itemscope itemtype="https://schema.org/Product">
+        <meta itemprop="sku" content="{{ product.sku }}">
+        <div itemprop="brand" itemscope itemtype="https://schema.org/Brand"><meta itemprop="name" content="{{ product.brand }}"></div>
+        <div class="product-card-image-wrap">
+            {% if product.is_on_sale %}
+            <span class="product-badge-sale" aria-label="On sale">-{{ product.discount_percentage }}%</span>
+            {% endif %}
+            {% if show_new_badge %}
+            <span class="product-badge-new">New</span>
+            {% endif %}
+            <a href="{{ url_for('products.product_detail', slug=product.slug) }}" aria-label="View {{ product.name }}">
+                <img src="{{ product.primary_image.image_url if product.primary_image else url_for('static', filename='images/placeholder-product.svg') }}"
+                     alt="{{ product.name }} — {{ product.brand }}"
+                     loading="lazy"
+                     itemprop="image">
+            </a>
+        </div>
+        <div class="product-card-body">
+            <div class="product-brand">{{ product.brand }}</div>
+            <h3 class="product-title">
+                <a href="{{ url_for('products.product_detail', slug=product.slug) }}" itemprop="url"><span itemprop="name">{{ product.name }}</span></a>
+            </h3>
+            <div class="product-rating" itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
+                <meta itemprop="ratingValue" content="{{ product.average_rating if product.average_rating > 0 else 5 }}">
+                <meta itemprop="reviewCount" content="1">
+                <span class="stars" aria-hidden="true">
+                    {% set rating = product.average_rating|int if product.average_rating > 0 else 5 %}
+                    {% for i in range(5) %}
+                    <i class="bi bi-star{% if i < rating %}-fill{% endif %}"></i>
+                    {% endfor %}
+                </span>
+                <span class="count">({{ product.average_rating if product.average_rating > 0 else '5.0' }})</span>
+            </div>
+            <div class="product-price-row" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                <meta itemprop="priceCurrency" content="KES">
+                <meta itemprop="price" content="{{ product.effective_price }}">
+                <link itemprop="availability" href="https://schema.org/{% if product.is_in_stock %}InStock{% else %}OutOfStock{% endif %}">
+                {% if product.is_on_sale %}
+                <span class="product-price-old" aria-label="Original price">KES {{ "{:,.0f}".format(product.price) }}</span>
+                <span class="product-price">KES {{ "{:,.0f}".format(product.discount_price) }}</span>
+                {% else %}
+                <span class="product-price">KES {{ "{:,.0f}".format(product.price) }}</span>
+                {% endif %}
+            </div>
+            {% set stock = product.stock_display %}
+            <small class="stock-label stock-{{ stock.code }}">{{ stock.label }}</small>
+        </div>
+        <div class="product-card-actions">
+            <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST" class="add-to-cart-form" data-product-name="{{ product.name }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn btn-primary add-to-cart-btn" {% if stock.code == 'out_of_stock' %}disabled{% endif %} aria-label="Add {{ product.name }} to cart">
+                    <i class="bi bi-bag-plus me-1" aria-hidden="true"></i>
+                    {% if stock.code != 'out_of_stock' %}Add to Cart{% else %}Out of Stock{% endif %}
+                </button>
+            </form>
+        </div>
+    </article>
+</div>
+{% endmacro %}
+
+{% macro render_whatsapp_order_btn(href, label='Order via WhatsApp', class='', block=false) %}
+<a href="{{ href }}" class="btn-whatsapp-order {{ class }}{% if block %} w-100{% endif %}" target="_blank" rel="noopener noreferrer">
+    <i class="bi bi-whatsapp" aria-hidden="true"></i> {{ label }}
+</a>
+{% endmacro %}
+
+{% macro render_pagination(pagination, endpoint, extra_params=none) %}
+{% set qp = extra_params or {} %}
+{% if pagination.pages > 1 %}
+<nav aria-label="Product pagination" class="mt-5">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for(endpoint, page=pagination.prev_num, **qp) if pagination.has_prev else '#' }}" {% if not pagination.has_prev %}aria-disabled="true"{% endif %}>
+                <i class="bi bi-chevron-left"></i> Previous
+            </a>
+        </li>
+        {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p %}
+        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for(endpoint, page=p, **qp) }}" {% if p == pagination.page %}aria-current="page"{% endif %}>{{ p }}</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for(endpoint, page=pagination.next_num, **qp) if pagination.has_next else '#' }}" {% if not pagination.has_next %}aria-disabled="true"{% endif %}>
+                Next <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endmacro %}
+
+{% macro render_stars(rating) %}
+<span class="stars" role="img" aria-label="{{ rating }} out of 5 stars">
+    {% for i in range(5) %}
+    <i class="bi bi-star{% if i < rating|int %}-fill{% elif i < rating %}-half{% endif %}" aria-hidden="true"></i>
+    {% endfor %}
+</span>
+{% endmacro %}

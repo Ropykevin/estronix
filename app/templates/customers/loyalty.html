@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-premium py-4">
+    <div class="row g-4">
+        <div class="col-lg-3">{% include "customers/_sidebar.html" %}</div>
+        <div class="col-lg-9">
+            <h1 class="h3">Loyalty & Rewards</h1>
+            <div class="trust-card p-4 mb-4">
+                <div class="row">
+                    <div class="col-md-4"><small class="text-muted">Tier</small><h4>{{ account.tier.value|title }}</h4></div>
+                    <div class="col-md-4"><small class="text-muted">Points Balance</small><h4>{{ account.points_balance }}</h4></div>
+                    <div class="col-md-4"><small class="text-muted">Referral Code</small><h4><code>{{ account.referral_code }}</code></h4></div>
+                </div>
+            </div>
+            <h2 class="h5">Reward History</h2>
+            <table class="table table-sm"><thead><tr><th>Date</th><th>Type</th><th>Points</th><th>Description</th></tr></thead>
+            <tbody>{% for h in history %}<tr><td>{{ h.created_at.strftime('%Y-%m-%d') }}</td><td>{{ h.transaction_type.value }}</td><td>{% if h.points > 0 %}+{% endif %}{{ h.points }}</td><td>{{ h.description or '—' }}</td></tr>{% endfor %}</tbody></table>
+        </div>
+    </div>
+</div>
+{% endblock %}

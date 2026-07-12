@@ -1,0 +1,4 @@
+<p>Hi {{ order.user.first_name or order.user.username }},</p>
+<p>Your order <strong>{{ order.order_number }}</strong> has been placed successfully.</p>
+<p>Total: KES {{ "{:,.2f}".format(order.total_amount) }}</p>
+<p>Thank you for shopping at Estronix!</p>

@@ -1,0 +1,11 @@
+{% extends "admin/base.html" %}
+{% block title %}Warehouses{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between mb-4">
+    <h1 class="h3">Warehouses</h1>
+    <a href="{{ url_for('admin.create_warehouse') }}" class="btn btn-primary btn-sm">Add Warehouse</a>
+</div>
+<div class="table-responsive"><table class="table table-striped"><thead><tr><th>Name</th><th>Code</th><th>Region</th><th>Status</th><th></th></tr></thead>
+<tbody>{% for w in warehouses %}<tr><td>{{ w.name }}</td><td>{{ w.code }}</td><td>{{ w.region }}</td><td>{% if w.is_active %}Active{% else %}Inactive{% endif %}</td>
+<td><a href="{{ url_for('admin.warehouse_stock', warehouse_id=w.id) }}" class="btn btn-sm btn-outline-primary">Stock</a></td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

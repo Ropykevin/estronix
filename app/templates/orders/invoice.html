@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><title>Invoice {{ order.order_number }}</title>
+<style>body{font-family:sans-serif;max-width:800px;margin:40px auto;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f5f5f5}.total{font-size:1.2em;font-weight:bold}</style>
+</head>
+<body>
+<h1>Estronix Invoice</h1>
+<p>Order: {{ order.order_number }}<br>Date: {{ order.created_at.strftime('%Y-%m-%d') }}<br>Customer: {{ order.user.full_name }}</p>
+<table><thead><tr><th>Product</th><th>SKU</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
+<tbody>{% for item in order.items %}<tr><td>{{ item.product_name }}</td><td>{{ item.product_sku }}</td><td>{{ item.quantity }}</td><td>KES {{ "{:,.2f}".format(item.unit_price) }}</td><td>KES {{ "{:,.2f}".format(item.total_price) }}</td></tr>{% endfor %}</tbody></table>
+<p class="total">Subtotal: KES {{ "{:,.2f}".format(order.subtotal) }}<br>Shipping: KES {{ "{:,.2f}".format(order.shipping_cost) }}<br>VAT: KES {{ "{:,.2f}".format(order.tax_amount) }}<br>Total: KES {{ "{:,.2f}".format(order.total_amount) }}</p>
+<button onclick="window.print()">Print</button>
+</body></html>

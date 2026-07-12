@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% from "macros.html" import render_product_card %}
+
+{% block structured_data %}
+{{ super() }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": {{ app_name | tojson }},
+  "url": {{ app_url | tojson }},
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {{ (app_url ~ '/products/?q={search_term_string}') | tojson }},
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+{% if featured_products %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Featured Products",
+  "itemListElement": [
+    {% for product in featured_products %}
+    {
+      "@type": "ListItem",
+      "position": {{ loop.index }},
+      "url": {{ url_for('products.product_detail', slug=product.slug, _external=True) | tojson }},
+      "name": {{ product.name | tojson }}
+    }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{# Hero #}
+<section class="hero-premium" aria-labelledby="hero-heading">
+    <div class="container-premium">
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content fade-up">
+                <div class="hero-eyebrow">
+                    <i class="bi bi-stars"></i> New arrivals every week
+                </div>
+                <h1 class="hero-title" id="hero-heading">Discover the <span>Latest Technology</span></h1>
+                <p class="hero-subtitle">Shop genuine smartphones, laptops, accessories and smart devices with warranty and fast delivery across Kenya.</p>
+                <div class="hero-actions">
+                    <a href="{{ url_for('products.list_products') }}" class="btn-premium btn-premium-primary btn-premium-lg">
+                        <i class="bi bi-bag-check"></i> Shop Now
+                    </a>
+                    <a href="{{ url_for('products.list_products') }}?sort=price_desc" class="btn-premium btn-premium-secondary btn-premium-lg">
+                        Explore Deals
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-icon"><i class="bi bi-truck"></i></div>
+                        <div><strong>Free Nairobi CBD Delivery</strong><span>On orders delivered within Nairobi CBD</span></div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-icon"><i class="bi bi-phone"></i></div>
+                        <div><strong>M-Pesa Ready</strong><span>Secure STK Push checkout</span></div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-icon"><i class="bi bi-shield-check"></i></div>
+                        <div><strong>Warranty Included</strong><span>Genuine products only</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 fade-up fade-up-delay-2">
+                {% if featured_products %}
+                <div class="hero-slider" id="heroProductSlider" data-autoplay="4500">
+                    <div class="hero-slider-viewport">
+                        {% for product in featured_products %}
+                        {% set next_idx = (loop.index0 + 1) % featured_products|length %}
+                        {% set third_idx = (loop.index0 + 2) % featured_products|length %}
+                        {% set secondary = featured_products[next_idx] %}
+                        {% set tertiary = featured_products[third_idx] %}
+                        <div class="hero-slide{% if loop.first %} is-active{% endif %}" data-slide="{{ loop.index0 }}">
+                            <div class="hero-showcase">
+                                <a href="{{ url_for('products.product_detail', slug=product.slug) }}" class="hero-float-card card-main">
+                                    <img src="{{ product.primary_image.image_url if product.primary_image else url_for('static', filename='images/placeholder-product.svg') }}" alt="{{ product.name }}"{% if loop.first %} fetchpriority="high"{% else %} loading="lazy"{% endif %}>
+                                    <div class="card-label">{{ product.brand }}</div>
+                                    <div class="card-name">{{ product.name[:40] }}{% if product.name|length > 40 %}…{% endif %}</div>
+                                    <div class="card-price">KES {{ "{:,.0f}".format(product.effective_price) }}</div>
+                                </a>
+                                {% if featured_products|length > 1 %}
+                                <a href="{{ url_for('products.product_detail', slug=secondary.slug) }}" class="hero-float-card card-secondary" tabindex="-1" aria-hidden="true">
+                                    <img src="{{ secondary.primary_image.image_url if secondary.primary_image else url_for('static', filename='images/placeholder-product.svg') }}" alt="" loading="lazy">
+                                    <div class="card-name">{{ secondary.name[:30] }}</div>
+                                    <div class="card-price">KES {{ "{:,.0f}".format(secondary.effective_price) }}</div>
+                                </a>
+                                {% endif %}
+                                {% if featured_products|length > 2 %}
+                                <a href="{{ url_for('products.product_detail', slug=tertiary.slug) }}" class="hero-float-card card-tertiary" tabindex="-1" aria-hidden="true">
+                                    <img src="{{ tertiary.primary_image.image_url if tertiary.primary_image else url_for('static', filename='images/placeholder-product.svg') }}" alt="" loading="lazy">
+                                    <div class="card-name">{{ tertiary.name[:28] }}</div>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if featured_products|length > 1 %}
+                    <button type="button" class="hero-slider-btn hero-slider-prev" aria-label="Previous product">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <button type="button" class="hero-slider-btn hero-slider-next" aria-label="Next product">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                    <div class="hero-slider-dots" role="tablist" aria-label="Featured products">
+                        {% for product in featured_products %}
+                        <button type="button" class="hero-slider-dot{% if loop.first %} is-active{% endif %}" data-slide="{{ loop.index0 }}" aria-label="Show {{ product.name }}"{% if loop.first %} aria-selected="true"{% endif %}></button>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="hero-showcase">
+                    <div class="hero-float-card card-main text-center py-5">
+                        <i class="bi bi-phone display-3 text-primary opacity-50"></i>
+                        <div class="card-name mt-3">Premium Electronics</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Categories #}
+{% if categories %}
+<section class="section-padding-sm bg-soft">
+    <div class="container-premium">
+        <div class="section-header text-center fade-up">
+            <span class="section-eyebrow">Browse</span>
+            <h2 class="section-title">Shop by Category</h2>
+            <p class="section-subtitle mx-auto">Find exactly what you need from our curated electronics collections.</p>
+        </div>
+        <div class="category-grid fade-up fade-up-delay-1">
+            {% set category_icons = {
+                'Smartphones': '📱', 'Laptops': '💻', 'Accessories': '🎧',
+                'Home Appliances': '🏠', 'Gaming': '🎮', 'Audio': '🔊',
+                'Smart Watches': '⌚', 'Electronics': '⚡'
+            } %}
+            {% for cat in categories %}
+            <a href="{{ url_for('products.category_products', slug=cat.slug) }}" class="category-card-premium">
+                <div class="category-icon">{{ category_icons.get(cat.name, '📦') }}</div>
+                <span class="category-name">{{ cat.name }}</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# Featured Products #}
+{% if featured_products %}
+<section class="section-padding">
+    <div class="container-premium">
+        <div class="section-header d-flex flex-wrap justify-content-between align-items-end gap-3 fade-up">
+            <div>
+                <span class="section-eyebrow">Curated</span>
+                <h2 class="section-title">Featured Products</h2>
+                <p class="section-subtitle mb-0">Hand-picked bestsellers with exclusive pricing.</p>
+            </div>
+            <a href="{{ url_for('products.list_products') }}" class="btn-premium btn-premium-secondary btn-premium-sm">View All <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="row g-4 fade-up fade-up-delay-1">
+            {% for product in featured_products %}
+            {{ render_product_card(product) }}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# New Arrivals #}
+{% if latest_products %}
+<section class="section-padding bg-soft">
+    <div class="container-premium">
+        <div class="section-header fade-up">
+            <span class="section-eyebrow">Just In</span>
+            <h2 class="section-title">New Arrivals</h2>
+            <p class="section-subtitle">The latest tech, fresh from our suppliers.</p>
+        </div>
+        <div class="row g-4 fade-up fade-up-delay-1">
+            {% for product in latest_products %}
+            {{ render_product_card(product, show_new_badge=(loop.index <= 2)) }}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# Trust Section #}
+<section class="section-padding" id="trust">
+    <div class="container-premium">
+        <div class="section-header text-center fade-up">
+            <span class="section-eyebrow">Why Estronix</span>
+            <h2 class="section-title">Shop With Confidence</h2>
+            <p class="section-subtitle mx-auto">Enterprise-grade trust built into every purchase.</p>
+        </div>
+        <div class="trust-grid fade-up fade-up-delay-1">
+            <div class="trust-card">
+                <div class="trust-icon"><i class="bi bi-shield-check"></i></div>
+                <h6>Genuine Products</h6>
+                <p>100% authentic electronics with verified serial numbers.</p>
+            </div>
+            <div class="trust-card">
+                <div class="trust-icon"><i class="bi bi-award"></i></div>
+                <h6>Warranty Included</h6>
+                <p>Full manufacturer warranty on every eligible product.</p>
+            </div>
+            <div class="trust-card">
+                <div class="trust-icon"><i class="bi bi-lock"></i></div>
+                <h6>Secure Payments</h6>
+                <p>M-Pesa STK Push and encrypted checkout process.</p>
+            </div>
+            <div class="trust-card">
+                <div class="trust-icon"><i class="bi bi-truck"></i></div>
+                <h6>Fast Delivery</h6>
+                <p>Nationwide delivery. Free {{ free_delivery_area }}; KES 500 fee for all other areas.</p>
+            </div>
+            <div class="trust-card">
+                <div class="trust-icon"><i class="bi bi-headset"></i></div>
+                <h6>Customer Support</h6>
+                <p>Expert assistance before and after your purchase.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# Testimonials #}
+<section class="section-padding bg-soft">
+    <div class="container-premium">
+        <div class="section-header text-center fade-up">
+            <span class="section-eyebrow">Reviews</span>
+            <h2 class="section-title">What Our Customers Say</h2>
+        </div>
+        <div class="testimonial-grid fade-up fade-up-delay-1">
+            <div class="testimonial-card">
+                <div class="testimonial-stars">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                </div>
+                <p class="testimonial-text">"Ordered a Samsung Galaxy and received it within 2 days. Genuine product, sealed box, and M-Pesa payment was seamless. Best electronics store in Nairobi."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">JK</div>
+                    <div>
+                        <div class="testimonial-name">James Kariuki</div>
+                        <div class="testimonial-role">Verified Buyer · Nairobi</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-stars">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                </div>
+                <p class="testimonial-text">"The MacBook Pro arrived perfectly packaged. Customer support helped me track my order. Estronix feels like shopping from an international brand locally."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">AW</div>
+                    <div>
+                        <div class="testimonial-name">Amina Wanjiru</div>
+                        <div class="testimonial-role">Verified Buyer · Mombasa</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-stars">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+                </div>
+                <p class="testimonial-text">"Great prices on Sony headphones compared to other stores. Fast checkout, clear warranty info, and the website is incredibly easy to use on mobile."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">DO</div>
+                    <div>
+                        <div class="testimonial-name">David Ochieng</div>
+                        <div class="testimonial-role">Verified Buyer · Kisumu</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# CTA Banner #}
+<section class="section-padding-sm">
+    <div class="container-premium">
+        <div class="cta-banner fade-up">
+            <h2>Ready to upgrade your tech?</h2>
+            <p>Join thousands of Kenyans who trust Estronix for premium electronics.</p>
+            <a href="{{ url_for('products.list_products') }}" class="btn-premium btn-premium-accent btn-premium-lg">Start Shopping</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/hero-slider.js') }}" defer></script>
+{% endblock %}

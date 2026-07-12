@@ -1,0 +1,157 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">{{ title }}</h1>
+    <a href="{{ url_for('admin.products') }}" class="btn btn-outline-secondary btn-sm">Back to Products</a>
+</div>
+
+<form method="POST" enctype="multipart/form-data" novalidate>
+    {{ form.hidden_tag() }}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted mb-3">Basic Information</h6>
+
+                    <div class="mb-3">
+                        {{ form.name.label(class="form-label") }}
+                        {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+                        {% for error in form.name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.sku.label(class="form-label") }}
+                            {{ form.sku(class="form-control" + (" is-invalid" if form.sku.errors else "")) }}
+                            {% for error in form.sku.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.brand.label(class="form-label") }}
+                            {{ form.brand(class="form-control" + (" is-invalid" if form.brand.errors else "")) }}
+                            {% for error in form.brand.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label") }}
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4) }}
+                        {% for error in form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <h6 class="text-muted mb-3 mt-2">Pricing & Inventory</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.price.label(class="form-label") }}
+                            {{ form.price(class="form-control" + (" is-invalid" if form.price.errors else "")) }}
+                            {% for error in form.price.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.discount_price.label(class="form-label") }}
+                            <span class="text-muted small">(optional)</span>
+                            {{ form.discount_price(class="form-control" + (" is-invalid" if form.discount_price.errors else "")) }}
+                            {% for error in form.discount_price.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.stock_quantity.label(class="form-label") }}
+                            {{ form.stock_quantity(class="form-control" + (" is-invalid" if form.stock_quantity.errors else "")) }}
+                            {% for error in form.stock_quantity.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.warranty_info.label(class="form-label") }}
+                        {{ form.warranty_info(class="form-control" + (" is-invalid" if form.warranty_info.errors else "")) }}
+                        {% for error in form.warranty_info.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.category_id.label(class="form-label") }}
+                            {{ form.category_id(class="form-select" + (" is-invalid" if form.category_id.errors else "")) }}
+                            {% for error in form.category_id.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.status.label(class="form-label") }}
+                            {{ form.status(class="form-select" + (" is-invalid" if form.status.errors else "")) }}
+                            {% for error in form.status.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        {{ form.is_featured(class="form-check-input") }}
+                        {{ form.is_featured.label(class="form-check-label") }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-4">
+                <div class="card-body">
+                    <h6 class="text-muted mb-3">SEO</h6>
+                    <div class="mb-3">
+                        {{ form.meta_title.label(class="form-label") }}
+                        {{ form.meta_title(class="form-control" + (" is-invalid" if form.meta_title.errors else "")) }}
+                        {% for error in form.meta_title.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="mb-0">
+                        {{ form.meta_description.label(class="form-label") }}
+                        {{ form.meta_description(class="form-control" + (" is-invalid" if form.meta_description.errors else "")) }}
+                        {% for error in form.meta_description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted mb-3">Product Images</h6>
+
+                    {% if product and product.images|length > 0 %}
+                    <div class="product-image-gallery mb-3">
+                        {% for image in product.images %}
+                        <div class="product-image-item{% if image.is_primary %} is-primary{% endif %}">
+                            <img src="{{ image.image_url }}" alt="{{ image.alt_text or product.name }}" class="img-fluid rounded border">
+                            <div class="product-image-actions">
+                                {% if not image.is_primary %}
+                                <form action="{{ url_for('admin.set_primary_product_image', product_id=product.id, image_id=image.id) }}" method="POST">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-light">Set Primary</button>
+                                </form>
+                                {% else %}
+                                <span class="badge bg-primary">Primary</span>
+                                {% endif %}
+                                <form action="{{ url_for('admin.delete_product_image', product_id=product.id, image_id=image.id) }}" method="POST" onsubmit="return confirm('Remove this image?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <p class="text-muted small">Up to 10 images per product. The primary image appears on listings.</p>
+                    {% endif %}
+
+                    {{ form.images.label(class="form-label") }}
+                    {{ form.images(class="form-control" + (" is-invalid" if form.images.errors else ""), accept="image/*", multiple=true) }}
+                    {% for error in form.images.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    <div class="form-text">JPG, PNG, GIF, or WebP. Up to 8 MB per image, 64 MB total per save.</div>
+
+                    {% if product %}
+                    <hr>
+                    <p class="small text-muted mb-1">SKU: <strong>{{ product.sku }}</strong></p>
+                    <p class="small text-muted mb-0">Slug: <code>/products/{{ product.slug }}</code></p>
+                    {% endif %}
+
+                    <div class="d-grid gap-2 mt-4">
+                        {{ form.submit(class="btn btn-primary") }}
+                        {% if product %}
+                        <a href="{{ url_for('admin.update_stock', product_id=product.id) }}" class="btn btn-outline-secondary">Update Stock</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Dashboard</h1>
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card stat-card border-0 shadow-sm"><div class="card-body"><small class="text-muted">Total Sales</small><h3>KES {{ "{:,.0f}".format(total_sales) }}</h3></div></div></div>
+    <div class="col-md-3"><div class="card stat-card border-0 shadow-sm"><div class="card-body"><small class="text-muted">Monthly Sales</small><h3>KES {{ "{:,.0f}".format(monthly_sales) }}</h3></div></div></div>
+    <div class="col-md-2"><div class="card stat-card border-0 shadow-sm"><div class="card-body"><small class="text-muted">Orders</small><h3>{{ total_orders }}</h3></div></div></div>
+    <div class="col-md-2"><div class="card stat-card border-0 shadow-sm"><div class="card-body"><small class="text-muted">Products</small><h3>{{ total_products }}</h3></div></div></div>
+    <div class="col-md-2"><div class="card stat-card border-0 shadow-sm"><div class="card-body"><small class="text-muted">Customers</small><h3>{{ total_customers }}</h3></div></div></div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm"><div class="card-header bg-white"><h6 class="mb-0">Recent Orders</h6></div>
+        <div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>{% for o in recent_orders %}<tr><td><a href="{{ url_for('admin.order_detail', order_id=o.id) }}">{{ o.order_number }}</a></td><td>{{ o.user.username }}</td><td>KES {{ "{:,.0f}".format(o.total_amount) }}</td><td>{{ o.status.value }}</td><td>{{ o.created_at.strftime('%Y-%m-%d') }}</td></tr>{% endfor %}</tbody></table></div></div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm"><div class="card-header bg-white"><h6 class="mb-0 text-danger">Low Stock Alert</h6></div>
+        <ul class="list-group list-group-flush">{% for p in low_stock %}<li class="list-group-item d-flex justify-content-between"><span>{{ p.name }}</span><span class="badge bg-warning">{{ p.stock_quantity }}</span></li>{% else %}<li class="list-group-item text-muted">All stock levels OK</li>{% endfor %}</ul></div>
+    </div>
+</div>
+{% endblock %}

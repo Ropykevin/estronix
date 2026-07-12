@@ -1,0 +1,84 @@
+<aside class="filter-panel" id="advanced-filters">
+    <h6><i class="bi bi-sliders me-2"></i>Filters</h6>
+    <form method="GET" action="{{ url_for('products.list_products') }}" id="filter-form" data-ajax-url="{{ url_for('products.list_products') }}">
+        {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+
+        <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted">Category</label>
+            <select name="category" class="form-select filter-input">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat.slug }}" {% if category_slug == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted">Brand</label>
+            <select name="brand" class="form-select filter-input">
+                <option value="">All Brands</option>
+                {% for b in facets.brands %}
+                <option value="{{ b }}" {% if brand == b %}selected{% endif %}>{{ b }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="row g-2 mb-3">
+            <div class="col-6">
+                <label class="form-label small text-muted">Min (KES)</label>
+                <input type="number" name="min_price" class="form-control filter-input" value="{{ min_price or '' }}" placeholder="0">
+            </div>
+            <div class="col-6">
+                <label class="form-label small text-muted">Max (KES)</label>
+                <input type="number" name="max_price" class="form-control filter-input" value="{{ max_price or '' }}" placeholder="Any">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <div class="form-check">
+                <input class="form-check-input filter-input" type="checkbox" name="in_stock" value="1" id="filterInStock" {% if filters.in_stock %}checked{% endif %}>
+                <label class="form-check-label small" for="filterInStock">In Stock Only</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input filter-input" type="checkbox" name="on_sale" value="1" id="filterOnSale" {% if filters.on_sale %}checked{% endif %}>
+                <label class="form-check-label small" for="filterOnSale">On Sale</label>
+            </div>
+        </div>
+
+        {% for param, spec in facets.specs.items() %}
+        <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted">{{ spec.label }}</label>
+            <select name="spec_{{ param }}" class="form-select filter-input">
+                <option value="">Any</option>
+                {% for val in spec.options %}
+                <option value="{{ val }}" {% if filters.specs.get(param) == val %}selected{% endif %}>{{ val }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endfor %}
+
+        <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted">Min Rating</label>
+            <select name="min_rating" class="form-select filter-input">
+                <option value="">Any</option>
+                {% for r in [3, 4, 5] %}
+                <option value="{{ r }}" {% if filters.min_rating == r %}selected{% endif %}>{{ r }}+ Stars</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label small fw-semibold text-muted">Sort By</label>
+            <select name="sort" class="form-select filter-input">
+                <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+                <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                <option value="name" {% if sort == 'name' %}selected{% endif %}>Name A–Z</option>
+                <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Most Popular</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mb-2">Apply Filters</button>
+        <a href="{{ url_for('products.list_products') }}" class="btn btn-outline-secondary w-100 btn-sm">Reset</a>
+    </form>
+</aside>

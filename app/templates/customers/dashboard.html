@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% from "macros.html" import render_product_card %}
+
+{% block content %}
+<div class="container-premium py-4">
+    <div class="row g-4">
+        <div class="col-lg-3">{% include "customers/_sidebar.html" %}</div>
+        <div class="col-lg-9">
+            <h1 class="section-title h3">Welcome, {{ current_user.first_name or current_user.username }}!</h1>
+
+            <div class="row g-3 mt-2 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="trust-card p-3 text-center">
+                        <i class="bi bi-bag fs-3 text-primary"></i>
+                        <h5 class="mt-2 mb-0">{{ recent_orders|length }}</h5>
+                        <small class="text-muted">Recent Orders</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="trust-card p-3 text-center">
+                        <i class="bi bi-heart fs-3 text-danger"></i>
+                        <h5 class="mt-2 mb-0">{{ wishlist|length }}</h5>
+                        <small class="text-muted">Wishlist</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="trust-card p-3 text-center">
+                        <i class="bi bi-shield-check fs-3 text-success"></i>
+                        <h5 class="mt-2 mb-0">{{ warranties_active|length }}</h5>
+                        <small class="text-muted">Active Warranties</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="trust-card p-3 text-center">
+                        <i class="bi bi-gift fs-3 text-warning"></i>
+                        <h5 class="mt-2 mb-0">{{ loyalty.points_balance }}</h5>
+                        <small class="text-muted">{{ loyalty.tier.value|title }} · Points</small>
+                    </div>
+                </div>
+            </div>
+
+            {% if notifications %}
+            <div class="alert alert-info">
+                <strong><i class="bi bi-bell me-1"></i>{{ notifications|length }} unread notification(s)</strong>
+                <a href="{{ url_for('customers.notifications') }}" class="alert-link ms-2">View all</a>
+            </div>
+            {% endif %}
+
+            {% if recent_orders %}
+            <section class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h2 class="h5 mb-0">Recent Orders</h2>
+                    <a href="{{ url_for('customers.orders') }}">View all</a>
+                </div>
+                <div class="table-responsive rounded-3 border">
+                    <table class="table table-sm mb-0">
+                        <thead><tr><th>Order</th><th>Date</th><th>Total</th><th>Status</th></tr></thead>
+                        <tbody>
+                        {% for o in recent_orders %}
+                        <tr>
+                            <td><a href="{{ url_for('orders.order_detail', order_number=o.order_number) }}">{{ o.order_number }}</a></td>
+                            <td>{{ o.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>KES {{ "{:,.0f}".format(o.total_amount) }}</td>
+                            <td>{{ o.status.value }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            {% endif %}
+
+            {% if recent_viewed %}
+            <section class="mb-4">
+                <h2 class="h5 mb-3">Recently Viewed</h2>
+                <div class="row g-3">
+                    {% for product in recent_viewed %}
+                    {{ render_product_card(product) }}
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            {% if recommended %}
+            <section class="mb-4">
+                <h2 class="h5 mb-3">Recommended For You</h2>
+                <div class="row g-3">
+                    {% for product in recommended %}
+                    {{ render_product_card(product) }}
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            <div class="row g-3">
+                {% if repairs %}
+                <div class="col-md-6">
+                    <h2 class="h6">Repair Requests</h2>
+                    <ul class="list-group list-group-flush border rounded-3">
+                        {% for r in repairs %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <a href="{{ url_for('customers.repair_detail', repair_id=r.id) }}">{{ r.ticket_number }}</a>
+                            <span class="badge bg-secondary">{{ r.status.value }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                {% if trade_ins %}
+                <div class="col-md-6">
+                    <h2 class="h6">Trade-In Requests</h2>
+                    <ul class="list-group list-group-flush border rounded-3">
+                        {% for t in trade_ins %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <a href="{{ url_for('tradein.detail', trade_in_id=t.id) }}">{{ t.reference_number }}</a>
+                            <span class="badge bg-secondary">{{ t.status.value }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

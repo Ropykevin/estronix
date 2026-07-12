@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-premium py-4">
+    <h1 class="h3">Trade-In {{ trade_in.reference_number }}</h1>
+    <p>{{ trade_in.device_brand }} {{ trade_in.device_model }} · {{ trade_in.condition.value|title }}</p>
+    <p><strong>Status:</strong> {{ trade_in.status.value.replace('_',' ').title() }}</p>
+    <p><strong>Estimated value:</strong> KES {{ "{:,.0f}".format(trade_in.estimated_value or 0) }}</p>
+    {% if trade_in.final_offer %}
+    <div class="alert alert-success"><strong>Final offer:</strong> KES {{ "{:,.0f}".format(trade_in.final_offer) }}</div>
+    {% if trade_in.status.value == 'offer_sent' %}
+    <form method="POST" action="{{ url_for('tradein.accept_offer', trade_in_id=trade_in.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-primary">Accept Offer</button>
+    </form>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

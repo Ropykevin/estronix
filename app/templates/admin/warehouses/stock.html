@@ -1,0 +1,13 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ warehouse.name }} Stock{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">{{ warehouse.name }} — Inventory</h1>
+<form method="POST" action="{{ url_for('admin.assign_warehouse_stock', warehouse_id=warehouse.id) }}" class="row g-2 mb-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="col-md-5"><select name="product_id" class="form-select" required>{% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></div>
+    <div class="col-md-3"><input type="number" name="quantity" class="form-control" placeholder="Quantity" required min="0"></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Assign</button></div>
+</form>
+<table class="table table-striped"><thead><tr><th>Product</th><th>Quantity</th><th>Reserved</th><th>Available</th></tr></thead>
+<tbody>{% for s in stock %}<tr><td>{{ s.product.name }}</td><td>{{ s.quantity }}</td><td>{{ s.reserved }}</td><td>{{ s.available }}</td></tr>{% endfor %}</tbody></table>
+{% endblock %}

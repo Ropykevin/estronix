@@ -1,0 +1,16 @@
+{% extends "admin/base.html" %}
+{% block title %}Order {{ order.order_number }}{% endblock %}
+{% block content %}
+<h1 class="h3">Order {{ order.order_number }}</h1>
+<div class="row g-4">
+<div class="col-md-7"><div class="card shadow-sm"><div class="card-body"><h6>Items</h6>
+<table class="table table-sm">{% for item in order.items %}<tr><td>{{ item.product_name }}</td><td>x{{ item.quantity }}</td><td>KES {{ "{:,.2f}".format(item.total_price) }}</td></tr>{% endfor %}</table>
+<pre class="bg-light p-2 rounded small">{{ order.shipping_address }}</pre></div></div></div>
+<div class="col-md-5"><div class="card shadow-sm"><div class="card-body"><h6>Update Status</h6>
+<form method="POST">{{ form.hidden_tag() }}
+<div class="mb-3">{{ form.status.label(class="form-label") }}{{ form.status(class="form-select") }}</div>
+<div class="mb-3">{{ form.tracking_number.label(class="form-label") }}{{ form.tracking_number(class="form-control") }}</div>
+<div class="mb-3">{{ form.admin_notes.label(class="form-label") }}{{ form.admin_notes(class="form-control", rows=3) }}</div>
+{{ form.submit(class="btn btn-primary w-100") }}
+</form></div></div></div></div>
+{% endblock %}

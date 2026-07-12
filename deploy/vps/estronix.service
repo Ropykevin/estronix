@@ -1,0 +1,19 @@
+[Unit]
+Description=Estronix E-Commerce (Gunicorn)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=estronix
+Group=www-data
+WorkingDirectory=/home/estronix/ecommerce
+Environment="PATH=/home/estronix/ecommerce/venv/bin"
+EnvironmentFile=/home/estronix/ecommerce/.env
+ExecStart=/home/estronix/ecommerce/venv/bin/gunicorn -c deploy/vps/gunicorn.conf.py
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

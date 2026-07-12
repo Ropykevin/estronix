@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header"><div class="container-premium"><h1>Device Trade-In Program</h1><p class="text-muted">Get credit toward your next purchase</p></div></div>
+<div class="container-premium pb-5">
+    <div class="row g-4">
+        <div class="col-md-4"><div class="trust-card p-4 h-100"><h3>1. Submit Device</h3><p class="text-muted">Tell us about your device and upload photos.</p></div></div>
+        <div class="col-md-4"><div class="trust-card p-4 h-100"><h3>2. Get Offer</h3><p class="text-muted">Our team reviews and sends a final trade-in value.</p></div></div>
+        <div class="col-md-4"><div class="trust-card p-4 h-100"><h3>3. Apply Credit</h3><p class="text-muted">Accept the offer and apply credit to a new order.</p></div></div>
+    </div>
+    <div class="text-center mt-5">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('tradein.submit') }}" class="btn-premium btn-premium-primary">Start Trade-In</a>
+        {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn-premium btn-premium-primary">Sign In to Trade In</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

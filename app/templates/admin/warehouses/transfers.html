@@ -1,0 +1,16 @@
+{% extends "admin/base.html" %}
+{% block title %}Stock Transfers{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Stock Transfers</h1>
+<form method="POST" class="row g-2 mb-4">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="col-md-2"><select name="from_id" class="form-select" required>{% for w in warehouses %}<option value="{{ w.id }}">{{ w.name }}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><select name="to_id" class="form-select" required>{% for w in warehouses %}<option value="{{ w.id }}">{{ w.name }}</option>{% endfor %}</select></div>
+    <div class="col-md-4"><select name="product_id" class="form-select" required>{% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></div>
+    <div class="col-md-2"><input type="number" name="quantity" class="form-control" min="1" required></div>
+    <div class="col-md-2"><button class="btn btn-primary w-100">Create Transfer</button></div>
+</form>
+<table class="table table-sm"><thead><tr><th>Transfer #</th><th>Product</th><th>Qty</th><th>Status</th><th></th></tr></thead>
+<tbody>{% for t in transfers %}<tr><td>{{ t.transfer_number }}</td><td>{{ t.product.name }}</td><td>{{ t.quantity }}</td><td>{{ t.status.value }}</td>
+<td>{% if t.status.value == 'pending' %}<form method="POST" action="{{ url_for('admin.complete_transfer', transfer_id=t.id) }}" class="d-inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm btn-success">Complete</button></form>{% endif %}</td></tr>{% endfor %}</tbody></table>
+{% endblock %}

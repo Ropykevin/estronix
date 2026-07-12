@@ -1,0 +1,8 @@
+{% extends "admin/base.html" %}
+{% block title %}Repairs{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Repair Requests</h1>
+<table class="table table-striped"><thead><tr><th>Ticket</th><th>Customer</th><th>Product</th><th>Status</th><th>Date</th><th></th></tr></thead>
+<tbody>{% for r in repairs %}<tr><td>{{ r.ticket_number }}</td><td>{{ r.user.email }}</td><td>{{ r.product_name }}</td><td>{{ r.status.value }}</td><td>{{ r.created_at.strftime('%Y-%m-%d') }}</td>
+<td><a href="{{ url_for('admin.repair_detail', repair_id=r.id) }}" class="btn btn-sm btn-outline-primary">Manage</a></td></tr>{% endfor %}</tbody></table>
+{% endblock %}

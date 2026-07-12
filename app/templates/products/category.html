@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "macros.html" import render_product_card, render_pagination %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container-premium">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-premium">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('products.list_products') }}">Products</a></li>
+                {% for crumb in breadcrumb %}
+                <li class="breadcrumb-item {% if loop.last %}active{% endif %}">{{ crumb.name }}</li>
+                {% endfor %}
+            </ol>
+        </nav>
+        <h1>{{ category.name }}</h1>
+        {% if category.description %}<p class="text-muted mb-0">{{ category.description }}</p>{% endif %}
+    </div>
+</div>
+
+<div class="container-premium pb-5">
+    {% if products %}
+    <div class="row g-4">
+        {% for product in products %}
+        {{ render_product_card(product) }}
+        {% endfor %}
+    </div>
+    {{ render_pagination(pagination, 'products.category_products', {'slug': category.slug, 'sort': sort}) }}
+    {% else %}
+    <div class="text-center py-5">
+        <p class="text-muted">No products in this category yet.</p>
+        <a href="{{ url_for('products.list_products') }}" class="btn-premium btn-premium-primary">Browse All Products</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

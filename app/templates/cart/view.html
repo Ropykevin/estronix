@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container-premium">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-premium">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Cart</li>
+            </ol>
+        </nav>
+        <h1>Shopping Cart</h1>
+        <p class="page-header-lead">Review your items before checkout</p>
+    </div>
+</div>
+
+<div class="container-premium pb-5" id="cartPageRoot">
+    {% include "cart/_content.html" %}
+</div>
+{% endblock %}

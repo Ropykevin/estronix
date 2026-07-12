@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-premium py-4">
+    <h1 class="h3 mb-4">Trade-In Your Device</h1>
+    <form method="POST" enctype="multipart/form-data" class="col-md-8">{{ form.hidden_tag() }}
+        <div class="row g-3">
+            <div class="col-md-6">{{ form.device_brand.label(class="form-label") }}{{ form.device_brand(class="form-control") }}</div>
+            <div class="col-md-6">{{ form.device_model.label(class="form-label") }}{{ form.device_model(class="form-control") }}</div>
+            <div class="col-md-6">{{ form.device_type.label(class="form-label") }}{{ form.device_type(class="form-select") }}</div>
+            <div class="col-md-6">{{ form.condition.label(class="form-label") }}{{ form.condition(class="form-select") }}</div>
+            <div class="col-12">{{ form.condition_notes.label(class="form-label") }}{{ form.condition_notes(class="form-control", rows=3) }}</div>
+            <div class="col-12">{{ form.images.label(class="form-label") }}{{ form.images(class="form-control") }}</div>
+        </div>
+        <div class="mt-4">{{ form.submit(class="btn btn-primary") }}</div>
+    </form>
+</div>
+{% endblock %}

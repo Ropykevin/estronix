@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Sales Reports</h1>
+<div class="row g-4">
+<div class="col-md-6"><div class="card shadow-sm"><div class="card-body"><h6>Monthly Sales</h6><canvas id="salesChart" height="200"></canvas></div></div></div>
+<div class="col-md-6"><div class="card shadow-sm"><div class="card-body"><h6>Orders by Status</h6><ul class="list-group">{% for status, count in status_counts %}<li class="list-group-item d-flex justify-content-between"><span>{{ status.value }}</span><span class="badge bg-primary">{{ count }}</span></li>{% endfor %}</ul></div></div></div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+new Chart(document.getElementById('salesChart'), {type:'bar', data:{labels:[{% for m,t in monthly_data %}'Month {{ m|int }}'{% if not loop.last %},{% endif %}{% endfor %}], datasets:[{label:'Sales (KES)', data:[{% for m,t in monthly_data %}{{ t|float }}{% if not loop.last %},{% endif %}{% endfor %}], backgroundColor:'#0d6efd'}]}});
+</script>
+{% endblock %}

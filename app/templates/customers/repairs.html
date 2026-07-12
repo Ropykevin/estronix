@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-premium py-4">
+    <div class="row g-4">
+        <div class="col-lg-3">{% include "customers/_sidebar.html" %}</div>
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between mb-3"><h1 class="h3 mb-0">Repair Requests</h1><a href="{{ url_for('customers.submit_repair') }}" class="btn btn-primary btn-sm">New Request</a></div>
+            <table class="table table-sm"><thead><tr><th>Ticket</th><th>Product</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>{% for r in repairs %}<tr><td><a href="{{ url_for('customers.repair_detail', repair_id=r.id) }}">{{ r.ticket_number }}</a></td><td>{{ r.product_name }}</td><td>{{ r.status.value }}</td><td>{{ r.created_at.strftime('%Y-%m-%d') }}</td></tr>{% endfor %}</tbody></table>
+        </div>
+    </div>
+</div>
+{% endblock %}

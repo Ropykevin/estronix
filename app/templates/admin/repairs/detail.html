@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+{% block title %}Repair {{ repair.ticket_number }}{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Repair {{ repair.ticket_number }}</h1>
+<p><strong>Product:</strong> {{ repair.product_name }} · <strong>Issue:</strong> {{ repair.issue_description }}</p>
+<form method="POST" class="col-md-6">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3"><label class="form-label">Status</label>
+    <select name="status" class="form-select">{% for s in RepairStatus %}<option value="{{ s.value }}" {% if repair.status == s %}selected{% endif %}>{{ s.value.replace('_',' ').title() }}</option>{% endfor %}</select></div>
+    <div class="mb-3"><label class="form-label">Estimated Cost (KES)</label><input type="number" name="estimated_cost" class="form-control" value="{{ repair.estimated_cost or '' }}"></div>
+    <div class="mb-3"><label class="form-label">Admin Notes</label><textarea name="admin_notes" class="form-control">{{ repair.admin_notes or '' }}</textarea></div>
+    <button class="btn btn-primary">Update</button>
+</form>
+{% endblock %}

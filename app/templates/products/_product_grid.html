@@ -1,0 +1,25 @@
+{% from "macros.html" import render_product_card, render_pagination %}
+<div id="product-grid-results">
+    <div class="shop-toolbar">
+        <p class="shop-result-count mb-0"><strong>{{ pagination.total }}</strong> product{% if pagination.total != 1 %}s{% endif %} found</p>
+        {% if search %}<span class="badge bg-light text-dark border">Search: {{ search }}</span>{% endif %}
+    </div>
+    {% if products %}
+    <div class="row g-4" id="product-grid">
+        {% for product in products %}
+        {{ render_product_card(product) }}
+        {% endfor %}
+    </div>
+    {{ render_pagination(pagination, 'products.list_products', {
+        'q': search, 'category': category_slug, 'brand': brand,
+        'min_price': min_price, 'max_price': max_price, 'sort': sort
+    }) }}
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon"><i class="bi bi-search"></i></div>
+        <h3 class="section-title">No products found</h3>
+        <p class="text-muted">Try adjusting your filters or search terms.</p>
+        <a href="{{ url_for('products.list_products') }}" class="btn-premium btn-premium-primary mt-2">View All Products</a>
+    </div>
+    {% endif %}
+</div>

@@ -1,0 +1,18 @@
+services:
+  web:
+    build: .
+    container_name: claid
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env
+      - .env.docker-runtime
+    environment:
+      FLASK_ENV: production
+      PORT: "${APP_PORT:-5060}"
+      APP_PORT: "${APP_PORT:-5060}"
+    volumes:
+      - uploads_data:/app/app/static/uploads
+
+volumes:
+  uploads_data:

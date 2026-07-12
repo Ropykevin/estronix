@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-padding bg-soft">
+    <div class="container-premium">
+        <div class="auth-card fade-up" style="max-width: 520px;">
+            <h2>Create Account</h2>
+            <p class="auth-subtitle">Join Estronix for exclusive deals and fast checkout</p>
+            <form method="POST" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        {{ form.first_name.label(class="form-label fw-semibold") }}
+                        {{ form.first_name(class="form-control") }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.last_name.label(class="form-label fw-semibold") }}
+                        {{ form.last_name(class="form-control") }}
+                    </div>
+                </div>
+                <div class="mb-3 mt-3">
+                    {{ form.username.label(class="form-label fw-semibold") }}
+                    {{ form.username(class="form-control") }}
+                    {% for e in form.username.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.email.label(class="form-label fw-semibold") }}
+                    {{ form.email(class="form-control") }}
+                    {% for e in form.email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.phone.label(class="form-label fw-semibold") }}
+                    {{ form.phone(class="form-control", placeholder="0712345678") }}
+                </div>
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label fw-semibold") }}
+                    {{ form.password(class="form-control") }}
+                </div>
+                <div class="mb-4">
+                    {{ form.confirm_password.label(class="form-label fw-semibold") }}
+                    {{ form.confirm_password(class="form-control") }}
+                </div>
+                {{ form.submit(class="btn-premium btn-premium-primary w-100 btn-premium-lg") }}
+            </form>
+            <p class="text-center text-muted small mt-4 mb-0">Already have an account? <a href="{{ url_for('auth.login') }}" class="fw-semibold">Sign In</a></p>
+        </div>
+    </div>
+</section>
+{% endblock %}

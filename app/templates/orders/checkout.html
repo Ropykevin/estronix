@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% from "macros.html" import render_whatsapp_order_btn %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container-premium">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-premium">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('cart.view_cart') }}">Cart</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+            </ol>
+        </nav>
+        <h1>Checkout</h1>
+        <p class="page-header-lead">Complete your order securely</p>
+    </div>
+</div>
+
+<div class="container-premium pb-5">
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="filter-panel">
+                <h5 class="mb-4" style="font-family: var(--font-heading); font-weight: 700;">Shipping Details</h5>
+                <form method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ form.full_name.label(class="form-label fw-semibold") }}
+                        {{ form.full_name(class="form-control" + (" is-invalid" if form.full_name.errors else "")) }}
+                        {% for error in form.full_name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.phone.label(class="form-label fw-semibold") }}
+                        {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else ""), placeholder="0712345678") }}
+                        {% for error in form.phone.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.address_line1.label(class="form-label fw-semibold") }}
+                        {{ form.address_line1(class="form-control" + (" is-invalid" if form.address_line1.errors else "")) }}
+                        {% for error in form.address_line1.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.address_line2.label(class="form-label fw-semibold") }}
+                        <span class="text-muted fw-normal small">(optional)</span>
+                        {{ form.address_line2(class="form-control" + (" is-invalid" if form.address_line2.errors else "")) }}
+                        {% for error in form.address_line2.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form.city.label(class="form-label fw-semibold") }}
+                            {{ form.city(class="form-control" + (" is-invalid" if form.city.errors else ""), id="checkout-city", placeholder="e.g. Nairobi CBD") }}
+                            {% for error in form.city.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                            <div class="form-text">Enter <strong>Nairobi CBD</strong> for free delivery within the CBD.</div>
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.county.label(class="form-label fw-semibold") }}
+                            {{ form.county(class="form-select" + (" is-invalid" if form.county.errors else ""), id="checkout-county") }}
+                            {% for error in form.county.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                            <div class="form-text">Free delivery {{ free_delivery_area }}. KES {{ "{:,.0f}".format(shipping_cost) }} fee elsewhere.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 mt-3">
+                        {{ form.postal_code.label(class="form-label fw-semibold") }}
+                        <span class="text-muted fw-normal small">(optional)</span>
+                        {{ form.postal_code(class="form-control" + (" is-invalid" if form.postal_code.errors else "")) }}
+                        {% for error in form.postal_code.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.customer_notes.label(class="form-label fw-semibold") }}
+                        <span class="text-muted fw-normal small">(optional)</span>
+                        {{ form.customer_notes(class="form-control" + (" is-invalid" if form.customer_notes.errors else ""), rows=3) }}
+                        {% for error in form.customer_notes.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form.payment_method.label(class="form-label fw-semibold") }}
+                        {{ form.payment_method(class="form-select" + (" is-invalid" if form.payment_method.errors else "")) }}
+                        {% for error in form.payment_method.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+                    </div>
+
+                    {{ form.submit(class="btn-premium btn-premium-primary w-100 btn-premium-lg mb-3") }}
+                    {{ render_whatsapp_order_btn(whatsapp_cart_url, block=true) }}
+                    <p class="text-muted small text-center mt-2 mb-0">Prefer to chat? Send your cart details on WhatsApp and we'll confirm your order.</p>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="order-summary-card">
+                <h5 class="mb-4" style="font-family: var(--font-heading); font-weight: 700;">Order Summary</h5>
+                <div class="d-flex justify-content-between mb-2"><span class="text-muted">Subtotal</span><span>KES {{ "{:,.0f}".format(subtotal) }}</span></div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Shipping</span>
+                    <span id="checkout-shipping">
+                        {% if qualifies_free_delivery %}
+                        <span class="text-success fw-semibold">FREE</span>
+                        {% elif shipping > 0 %}
+                        KES {{ "{:,.0f}".format(shipping) }}
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between mb-3"><span class="text-muted">VAT (16%)</span><span>KES {{ "{:,.0f}".format(tax) }}</span></div>
+                <hr>
+                <div class="d-flex justify-content-between fw-bold fs-5">
+                    <span>Total</span>
+                    <span id="checkout-total" style="color: var(--color-navy);">KES {{ "{:,.0f}".format(total) }}</span>
+                </div>
+                <p class="text-muted small mt-3 mb-0" id="checkout-shipping-note">
+                    {% if qualifies_free_delivery %}
+                    Free shipping applied for delivery {{ free_delivery_area }}.
+                    {% elif form.county.data and form.city.data %}
+                    KES {{ "{:,.0f}".format(shipping_cost) }} delivery fee for orders outside Nairobi CBD.
+                    {% else %}
+                    Select county and enter Nairobi CBD as city/town to check free delivery.
+                    {% endif %}
+                </p>
+                <div class="checkout-trust">
+                    <div class="checkout-trust-item"><i class="bi bi-lock-fill"></i> SSL encrypted</div>
+                    <div class="checkout-trust-item"><i class="bi bi-whatsapp"></i> Order via WhatsApp</div>
+                    <div class="checkout-trust-item"><i class="bi bi-shield-check"></i> Genuine products</div>
+                    <div class="checkout-trust-item"><i class="bi bi-phone"></i> M-Pesa STK Push</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const countySelect = document.getElementById("checkout-county");
+    const cityInput = document.getElementById("checkout-city");
+    if (!countySelect || !cityInput) return;
+
+    const subtotal = {{ subtotal|tojson }};
+    const tax = {{ tax|tojson }};
+    const shippingCost = {{ shipping_cost|tojson }};
+    const nairobiCounty = {{ nairobi_county|tojson }};
+    const freeDeliveryArea = {{ free_delivery_area|tojson }};
+    const cbdMarkers = ["cbd", "nairobi cbd", "city centre", "city center", "central business district"];
+    const shippingEl = document.getElementById("checkout-shipping");
+    const totalEl = document.getElementById("checkout-total");
+    const noteEl = document.getElementById("checkout-shipping-note");
+
+    function formatKes(amount) {
+        return "KES " + Math.round(amount).toLocaleString("en-KE");
+    }
+
+    function isNairobiCounty(county) {
+        if (!county) return false;
+        return county.trim().toLowerCase().replace(" county", "").trim() === nairobiCounty.toLowerCase();
+    }
+
+    function isNairobiCbd(county, city) {
+        if (!isNairobiCounty(county) || !city) return false;
+        const normalized = city.trim().toLowerCase();
+        return cbdMarkers.some(function (marker) {
+            return normalized.indexOf(marker) !== -1;
+        });
+    }
+
+    function calculateShipping(county, city) {
+        if (!county) return 0;
+        return isNairobiCbd(county, city) ? 0 : shippingCost;
+    }
+
+    function updateSummary() {
+        const county = countySelect.value;
+        const city = cityInput.value;
+        const freeDelivery = isNairobiCbd(county, city);
+        const shipping = county ? calculateShipping(county, city) : 0;
+        const total = subtotal + shipping + tax;
+
+        if (freeDelivery) {
+            shippingEl.innerHTML = '<span class="text-success fw-semibold">FREE</span>';
+        } else if (!county) {
+            shippingEl.innerHTML = '<span class="text-muted">—</span>';
+        } else {
+            shippingEl.textContent = formatKes(shipping);
+        }
+        totalEl.textContent = formatKes(total);
+
+        if (noteEl) {
+            if (freeDelivery) {
+                noteEl.textContent = "Free shipping applied for delivery " + freeDeliveryArea + ".";
+            } else if (!county) {
+                noteEl.textContent = "Select county and enter Nairobi CBD as city/town to check free delivery.";
+            } else if (isNairobiCounty(county) && !city.trim()) {
+                noteEl.textContent = "Enter Nairobi CBD as your city/town for free delivery within the CBD.";
+            } else {
+                noteEl.textContent = formatKes(shippingCost) + " delivery fee for orders outside Nairobi CBD.";
+            }
+        }
+    }
+
+    countySelect.addEventListener("change", updateSummary);
+    cityInput.addEventListener("input", updateSummary);
+    updateSummary();
+})();
+</script>
+{% endblock %}

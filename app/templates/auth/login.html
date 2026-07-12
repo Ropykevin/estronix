@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section-padding bg-soft">
+    <div class="container-premium">
+        <div class="auth-card fade-up">
+            <h2>Welcome Back</h2>
+            <p class="auth-subtitle">Sign in to your Estronix account</p>
+            <form method="POST" novalidate>
+                {{ form.hidden_tag() }}
+                <div class="mb-3">
+                    {{ form.email.label(class="form-label fw-semibold") }}
+                    {{ form.email(class="form-control form-control-lg" + (" is-invalid" if form.email.errors else ""), placeholder="you@example.com") }}
+                    {% for e in form.email.errors %}<div class="invalid-feedback">{{ e }}</div>{% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{ form.password.label(class="form-label fw-semibold") }}
+                    {{ form.password(class="form-control form-control-lg" + (" is-invalid" if form.password.errors else ""), placeholder="••••••••") }}
+                </div>
+                <div class="mb-4 form-check">
+                    {{ form.remember(class="form-check-input") }}
+                    {{ form.remember.label(class="form-check-label") }}
+                </div>
+                {{ form.submit(class="btn-premium btn-premium-primary w-100 btn-premium-lg") }}
+            </form>
+            <div class="text-center mt-4">
+                <a href="{{ url_for('auth.forgot_password') }}" class="small">Forgot password?</a>
+                <p class="text-muted small mt-3 mb-0">Don't have an account? <a href="{{ url_for('auth.register') }}" class="fw-semibold">Create one</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

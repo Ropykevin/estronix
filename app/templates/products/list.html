@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "macros.html" import render_product_card, render_pagination %}
+
+{% block extra_css %}
+<link rel="canonical" href="{{ canonical_url }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container-premium">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb breadcrumb-premium">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li class="breadcrumb-item active">Shop</li>
+            </ol>
+        </nav>
+        <h1>{% if search %}Results for "{{ search }}"{% else %}All Products{% endif %}</h1>
+        <p class="page-header-lead">Browse genuine electronics with warranty, M-Pesa checkout & fast delivery.</p>
+    </div>
+</div>
+
+<div class="container-premium pb-5">
+    <div class="row g-4">
+        <div class="col-lg-3">
+            {% include "products/_filters.html" %}
+        </div>
+        <div class="col-lg-9">
+            {% include "products/_product_grid.html" %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/filters.js') }}" defer></script>
+{% endblock %}
