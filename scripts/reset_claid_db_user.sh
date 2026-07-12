@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Reset PostgreSQL role/password and grants for the Docker deploy path.
-# Usage: sudo bash scripts/reset_claid_db_user.sh
+# Usage: sudo bash scripts/reset_estronix_db_user.sh
 
 if [ -z "${BASH_VERSION:-}" ]; then
   exec bash "$0" "$@"
@@ -25,7 +25,7 @@ load_dotenv .env
 : "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"
 
 if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
-  echo "Run with sudo: sudo bash scripts/reset_claid_db_user.sh" >&2
+  echo "Run with sudo: sudo bash scripts/reset_estronix_db_user.sh" >&2
   exit 1
 fi
 

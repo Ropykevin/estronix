@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    container_name: claid
+    container_name: estronix
     restart: unless-stopped
     network_mode: host
     env_file:

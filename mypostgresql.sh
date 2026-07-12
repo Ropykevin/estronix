@@ -2,7 +2,7 @@
 # One-time VPS setup: PostgreSQL + host Nginx reverse proxy (+ optional SSL).
 #
 # Usage:
-#   cp .env.example .env && nano .env   # set POSTGRES_USER=claid, POSTGRES_PASSWORD
+#   cp .env.example .env && nano .env   # set POSTGRES_USER=estronix, POSTGRES_PASSWORD
 #   sudo bash mypostgresql.sh
 #   sudo INSTALL_SSL=true bash mypostgresql.sh
 #
@@ -64,10 +64,10 @@ if [[ -n "${PG_CONF}" ]]; then
 fi
 
 if [[ -n "${PG_HBA}" ]]; then
-  if ! grep -q "# claid docker" "${PG_HBA}"; then
+  if ! grep -q "# estronix docker" "${PG_HBA}"; then
     cat >> "${PG_HBA}" <<'HBA'
 
-# claid docker
+# estronix docker
 host    all             all             172.16.0.0/12           scram-sha-256
 host    all             all             172.17.0.0/16           scram-sha-256
 HBA

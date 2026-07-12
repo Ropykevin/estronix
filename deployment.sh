@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Repeatable app deploy — run after: sudo bash scripts/reset_claid_db_user.sh
+# Repeatable app deploy — run after: sudo bash scripts/reset_estronix_db_user.sh
 #
 # Usage (on the VPS):
 #   bash deployment.sh
@@ -29,7 +29,7 @@ echo "==> Pre-flight: testing Postgres on host..."
 if ! PGPASSWORD="${POSTGRES_PASSWORD}" psql -h 127.0.0.1 -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" -c "SELECT 1;" >/dev/null 2>&1; then
   echo "ERROR: Cannot log in to Postgres as ${POSTGRES_USER} on 127.0.0.1" >&2
   echo "Fix the database first:" >&2
-  echo "  sudo bash scripts/reset_claid_db_user.sh" >&2
+  echo "  sudo bash scripts/reset_estronix_db_user.sh" >&2
   exit 1
 fi
 echo "Postgres login OK."
@@ -49,12 +49,12 @@ docker compose up -d --force-recreate --remove-orphans
 echo "==> Waiting for app to start..."
 OK=0
 for _ in $(seq 1 60); do
-  STATUS="$(docker inspect -f '{{.State.Status}}' claid 2>/dev/null || echo missing)"
+  STATUS="$(docker inspect -f '{{.State.Status}}' estronix 2>/dev/null || echo missing)"
   if [[ "${STATUS}" == "restarting" ]]; then
     echo "Container is crash-looping. Recent logs:" >&2
     docker compose logs --tail=50 web >&2 || true
     echo "" >&2
-    echo "Run: sudo bash scripts/reset_claid_db_user.sh && bash deployment.sh" >&2
+    echo "Run: sudo bash scripts/reset_estronix_db_user.sh && bash deployment.sh" >&2
     exit 1
   fi
   if curl -fsS "http://127.0.0.1:${APP_PORT:-5060}/" >/dev/null 2>&1; then

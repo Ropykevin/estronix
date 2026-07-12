@@ -119,7 +119,7 @@ This will:
 1. Verify PostgreSQL login
 2. Pull latest Git code
 3. Write `.env.docker-runtime` with `DATABASE_URL`
-4. Build and start the `claid` Docker container
+4. Build and start the `estronix` Docker container
 5. Run `flask db upgrade` inside the container (via entrypoint)
 6. Wait until the app responds on `APP_PORT`
 
@@ -166,7 +166,7 @@ bash deployment.sh
 
 | Problem | Command / fix |
 |---------|----------------|
-| Postgres login failed | `sudo bash scripts/reset_claid_db_user.sh` then `bash deployment.sh` |
+| Postgres login failed | `sudo bash scripts/reset_estronix_db_user.sh` then `bash deployment.sh` |
 | Container crash-loop | `docker compose logs --tail=100 web` |
 | Port mismatch | Align `APP_PORT` in `.env`, `docker-compose.yml`, and Nginx |
 | Redis rate limits | `sudo systemctl enable redis-server && sudo systemctl start redis-server` |
@@ -174,7 +174,7 @@ bash deployment.sh
 
 ## Architecture notes
 
-- **Container name:** `claid`
+- **Container name:** `estronix`
 - **Network:** `host` (container shares VPS network; DB at `127.0.0.1`)
 - **Uploads:** Docker volume `uploads_data`
 - **Do not use** `python run.py` in production — Docker runs Gunicorn via `wsgi.py`
