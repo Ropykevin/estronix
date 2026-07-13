@@ -41,6 +41,34 @@ class EmailService:
             timeout=30,
         )
         response.raise_for_status()
+        return response.json() if response.content else {}
+
+    @classmethod
+    def send_test_email(cls, recipient, subject=None, message=None):
+        """Send a test email via Brevo; raises on failure."""
+        recipient = recipient.strip().lower()
+        app_name = current_app.config["APP_NAME"]
+        subject = subject or f"Test email from {app_name}"
+        message = message or f"If you received this, Brevo email is working for {app_name}."
+        html_body = f"<p>{message}</p>"
+
+        if current_app.config.get("MAIL_SUPPRESS_SEND"):
+            return {"status": "suppressed", "to": recipient}
+
+        if current_app.config.get("MAIL_CONSOLE"):
+            current_app.logger.info(
+                "\n%s\nDEV EMAIL (console mode)\nTo: %s\nSubject: %s\n%s\n%s",
+                "=" * 60,
+                recipient,
+                subject,
+                message,
+                "=" * 60,
+            )
+            return {"status": "console", "to": recipient}
+
+        result = cls._send_via_brevo(subject, [recipient], message, html_body)
+        current_app.logger.info("Brevo test email sent to %s", recipient)
+        return {"status": "sent", "to": recipient, "response": result}
 
     @staticmethod
     def send_email(subject, recipients, text_body, html_body):
@@ -60,8 +88,9 @@ class EmailService:
 
         try:
             EmailService._send_via_brevo(subject, recipients, text_body, html_body)
-        except Exception as e:
-            current_app.logger.error("Brevo email send failed: %s", e)
+        except requests.HTTPError as e:
+            detail = e.response.text if e.response is not None else str(e)
+            current_app.logger.error("Brevo email send failed: %s", detail)
             if current_app.debug:
                 current_app.logger.warning(
                     "\n%s\nBrevo failed — use this link in dev:\n%s\n%s",
@@ -69,6 +98,8 @@ class EmailService:
                     text_body,
                     "=" * 60,
                 )
+        except Exception as e:
+            current_app.logger.error("Brevo email send failed: %s", e)
 
     @classmethod
     def send_verification_email(cls, user):

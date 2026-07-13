@@ -212,6 +212,34 @@ def _register_cli_commands(app):
 
         print(ensure_admin(reset_password=force))
 
+    @app.cli.command("test-email")
+    @click.option(
+        "--to",
+        default=None,
+        help="Recipient email. Defaults to ADMIN_EMAIL or CONTACT_EMAIL.",
+    )
+    @click.option("--subject", default=None, help="Email subject line.")
+    @click.option("--message", default=None, help="Plain-text email body.")
+    def test_email(to, subject, message):
+        """Send a test email via Brevo."""
+        from app.services.email_service import EmailService
+
+        recipient = (
+            to
+            or app.config.get("ADMIN_EMAIL")
+            or app.config.get("CONTACT_EMAIL")
+            or app.config.get("MAIL_DEFAULT_SENDER")
+        )
+        if not recipient:
+            raise click.ClickException("Pass --to or set ADMIN_EMAIL / CONTACT_EMAIL in .env")
+
+        try:
+            result = EmailService.send_test_email(recipient, subject=subject, message=message)
+        except Exception as e:
+            raise click.ClickException(str(e)) from e
+
+        click.echo(f"Email result: {result}")
+
     @app.cli.command("seed-data")
     def seed_data():
         """Seed sample categories and products."""
