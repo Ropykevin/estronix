@@ -2,9 +2,10 @@
 
 from datetime import timezone
 
-from flask import Blueprint, Response, abort, current_app, render_template, url_for
+from flask import Blueprint, Response, abort, current_app, render_template
 
 from app.models import Category, Product, ProductStatus
+from app.utils.seo import external_url
 
 main_bp = Blueprint("main", __name__)
 
@@ -47,7 +48,7 @@ def index():
         categories=categories,
         meta_title="Estronix — Premium Electronics Store in Kenya | M-Pesa & Free Nairobi CBD Delivery",
         meta_description="Shop smartphones, laptops, headphones & home appliances at Estronix Kenya. Genuine products, M-Pesa checkout, warranty included & free delivery within Nairobi CBD.",
-        canonical_url=url_for("main.index", _external=True),
+        canonical_url=external_url("main.index"),
     )
 
 
@@ -64,7 +65,7 @@ Disallow: /checkout/
 Disallow: /orders/
 Disallow: /payments/
 
-Sitemap: {url_for('main.sitemap', _external=True)}
+Sitemap: {external_url("main.sitemap")}
 """
     return Response(content, mimetype="text/plain")
 
@@ -74,13 +75,13 @@ def sitemap():
     """Generate XML sitemap for SEO."""
     pages = [
         {
-            "loc": url_for("main.index", _external=True),
+            "loc": external_url("main.index"),
             "changefreq": "daily",
             "priority": "1.0",
             "lastmod": None,
         },
         {
-            "loc": url_for("products.list_products", _external=True),
+            "loc": external_url("products.list_products"),
             "changefreq": "daily",
             "priority": "0.9",
             "lastmod": None,
@@ -89,7 +90,7 @@ def sitemap():
 
     for product in Product.query.filter_by(status=ProductStatus.ACTIVE).order_by(Product.updated_at.desc()):
         pages.append({
-            "loc": url_for("products.product_detail", slug=product.slug, _external=True),
+            "loc": external_url("products.product_detail", slug=product.slug),
             "changefreq": "weekly",
             "priority": "0.8",
             "lastmod": _format_lastmod(product.updated_at or product.created_at),
@@ -97,7 +98,7 @@ def sitemap():
 
     for category in Category.query.filter_by(is_active=True).order_by(Category.name):
         pages.append({
-            "loc": url_for("products.category_products", slug=category.slug, _external=True),
+            "loc": external_url("products.category_products", slug=category.slug),
             "changefreq": "weekly",
             "priority": "0.7",
             "lastmod": _format_lastmod(category.updated_at or category.created_at),

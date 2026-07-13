@@ -165,9 +165,11 @@ def _register_context_processors(app):
         contact_phone = app.config.get("CONTACT_PHONE", "0757840780")
         contact_email = app.config.get("CONTACT_EMAIL", "estronix82@gmail.com")
 
+        from app.utils.seo import site_base_url
+
         return {
             "app_name": app.config["APP_NAME"],
-            "app_url": app.config.get("APP_URL", "http://localhost:5000").rstrip("/"),
+            "app_url": site_base_url(),
             "google_site_verification": app.config.get("GOOGLE_SITE_VERIFICATION"),
             "cart_count": cart_count,
             "nav_categories": nav_categories,
@@ -243,37 +245,42 @@ def _register_cli_commands(app):
     @app.cli.command("seo-check")
     def seo_check():
         """Verify SEO endpoints and print Google Search Console setup steps."""
-        app_url = app.config.get("APP_URL", "").rstrip("/")
-        domain = app.config.get("SERVER_NAME") or "(not set)"
+        from app.utils.seo import external_url, site_base_url
 
-        click.echo(f"APP_URL: {app_url or '(not set)'}")
-        click.echo(f"SERVER_NAME: {domain}")
+        click.echo(f"APP_URL: {app.config.get('APP_URL') or '(not set)'}")
+        click.echo(f"DOMAIN:  {app.config.get('DOMAIN') or '(not set)'}")
         click.echo("")
 
-        with app.test_request_context(base_url=app_url or "http://localhost/"):
-            robots_url = url_for("main.robots_txt", _external=True)
-            sitemap_url = url_for("main.sitemap", _external=True)
-            home_url = url_for("main.index", _external=True)
+        with app.test_request_context(
+            "/",
+            base_url="http://estronix.co.ke/",
+            headers={"Host": "estronix.co.ke", "X-Forwarded-Proto": "http"},
+        ):
+            public_base = site_base_url()
+            home_url = external_url("main.index")
+            robots_url = external_url("main.robots_txt")
+            sitemap_url = external_url("main.sitemap")
 
-        click.echo(f"Homepage:  {home_url}")
-        click.echo(f"Robots:    {robots_url}")
-        click.echo(f"Sitemap:   {sitemap_url}")
+        click.echo(f"Public base: {public_base}")
+        click.echo(f"Homepage:    {home_url}")
+        click.echo(f"Robots:      {robots_url}")
+        click.echo(f"Sitemap:     {sitemap_url}")
         click.echo("")
 
         with app.test_client() as client:
-            robots = client.get("/robots.txt")
-            sitemap = client.get("/sitemap.xml")
-            home = client.get("/")
+            robots = client.get("/robots.txt", headers={"Host": "estronix.co.ke"})
+            sitemap = client.get("/sitemap.xml", headers={"Host": "estronix.co.ke"})
+            home = client.get("/", headers={"Host": "estronix.co.ke"})
 
         click.echo(f"GET /robots.txt   -> {robots.status_code}")
         click.echo(f"GET /sitemap.xml  -> {sitemap.status_code}")
         click.echo(f"GET /             -> {home.status_code}")
 
-        if app_url and sitemap.status_code == 200:
+        if sitemap.status_code == 200:
             body = sitemap.get_data(as_text=True)
-            if app_url.replace("https://", "").replace("http://", "") not in body:
+            if "estronix.co.ke" not in body and "localhost" in body:
                 click.echo("")
-                click.echo("WARNING: sitemap URLs may not match APP_URL. Set APP_URL in .env and redeploy.")
+                click.echo("WARNING: sitemap still contains localhost. Set APP_URL or DOMAIN in .env and redeploy.")
 
         click.echo("")
         click.echo("Google Search Console:")

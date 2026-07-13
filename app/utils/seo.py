@@ -2,30 +2,46 @@
 
 from urllib.parse import urlparse
 
-from flask import current_app, request
+from flask import current_app, request, url_for
+
+
+def _normalize_base_url(url):
+    url = (url or "").strip().rstrip("/")
+    if url and "://" not in url:
+        url = f"http://{url}"
+    return url
+
+
+def _is_local_host(netloc):
+    if not netloc:
+        return True
+    host = netloc.split(":")[0].lower()
+    return host in {"localhost", "127.0.0.1", "0.0.0.0"}
 
 
 def site_base_url():
-    """Public site root from APP_URL, falling back to the current request."""
-    configured = (current_app.config.get("APP_URL") or "").strip().rstrip("/")
-    if configured:
-        if "://" not in configured:
-            configured = f"https://{configured}"
+    """Public site root for SEO URLs."""
+    configured = _normalize_base_url(current_app.config.get("APP_URL"))
+    parsed = urlparse(configured) if configured else None
+
+    if configured and parsed and parsed.netloc and not _is_local_host(parsed.netloc):
         return configured
-    return request.url_root.rstrip("/")
+
+    domain = (current_app.config.get("DOMAIN") or "").strip()
+    if domain:
+        scheme = "https" if current_app.config.get("PREFERRED_URL_SCHEME") == "https" else "http"
+        return f"{scheme}://{domain}".rstrip("/")
+
+    if request:
+        scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
+        host = request.headers.get("X-Forwarded-Host", request.host)
+        if host and not _is_local_host(host):
+            return f"{scheme}://{host}".rstrip("/")
+
+    return configured or "http://localhost:5000"
 
 
-def configure_url_generation(app):
-    """Align Flask external URL generation with APP_URL."""
-    app_url = (app.config.get("APP_URL") or "").strip()
-    if not app_url:
-        return
-
-    if "://" not in app_url:
-        app_url = f"https://{app_url}"
-
-    parsed = urlparse(app_url)
-    if parsed.scheme:
-        app.config["PREFERRED_URL_SCHEME"] = parsed.scheme
-    if parsed.netloc:
-        app.config["SERVER_NAME"] = parsed.netloc
+def external_url(endpoint, **values):
+    """Build an absolute public URL for sitemaps, robots, and canonical tags."""
+    path = url_for(endpoint, _external=False, **values)
+    return f"{site_base_url()}{path}"

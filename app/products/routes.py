@@ -9,6 +9,7 @@ from app.services.filter_service import FilterService
 from app.services.product_service import ProductService
 from app.services.recommendation_service import RecommendationService, WishlistService
 from app.services.whatsapp_service import WhatsAppService
+from app.utils.seo import external_url
 
 products_bp = Blueprint("products", __name__)
 
@@ -38,7 +39,7 @@ def list_products():
         "sort": filters.get("sort", "newest"),
         "meta_title": f"Shop Electronics{' - ' + filters['search'] if filters.get('search') else ''} | Estronix",
         "meta_description": "Browse electronics with advanced filters at Estronix Kenya.",
-        "canonical_url": url_for("products.list_products", **FilterService.filters_to_query_string(filters), _external=True),
+        "canonical_url": external_url("products.list_products", **FilterService.filters_to_query_string(filters)),
     }
 
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
@@ -68,7 +69,7 @@ def category_products(slug):
         breadcrumb=category.get_breadcrumb(),
         meta_title=f"{category.name} - Shop Online | Estronix",
         meta_description=category.description or f"Shop {category.name} at Estronix.",
-        canonical_url=url_for("products.category_products", slug=slug, _external=True),
+        canonical_url=external_url("products.category_products", slug=slug),
     )
 
 
@@ -97,7 +98,7 @@ def product_detail(slug):
         stock_info=stock_info,
         meta_title=product.meta_title or f"{product.name} | Estronix",
         meta_description=product.meta_description or (product.description[:320] if product.description else ""),
-        canonical_url=url_for("products.product_detail", slug=product.slug, _external=True),
+        canonical_url=external_url("products.product_detail", slug=product.slug),
         whatsapp_product_url=WhatsAppService.product_order_url(product, 1),
     )
 

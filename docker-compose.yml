@@ -11,6 +11,7 @@ services:
       FLASK_ENV: production
       PORT: "${APP_PORT:-5060}"
       APP_PORT: "${APP_PORT:-5060}"
+      APP_URL: "${APP_URL:-http://${DOMAIN:-estronix.co.ke}}"
     volumes:
       - uploads_data:/app/app/static/uploads
 

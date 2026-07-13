@@ -10,14 +10,26 @@ load_dotenv()
 
 
 def _app_url_settings():
-    app_url = os.environ.get("APP_URL", "http://localhost:5000").strip()
-    if app_url and "://" not in app_url:
-        app_url = f"https://{app_url}"
+    app_url = os.environ.get("APP_URL", "").strip()
+    domain = os.environ.get("DOMAIN", "").strip()
+
+    if not app_url and domain:
+        app_url = f"http://{domain}"
+    if not app_url:
+        app_url = "http://localhost:5000"
+    if "://" not in app_url:
+        app_url = f"http://{app_url}"
+
     parsed = urlparse(app_url)
+    netloc = parsed.netloc or None
+    if netloc and (netloc.split(":")[0].lower() in {"localhost", "127.0.0.1", "0.0.0.0"}):
+        netloc = None
+
     return {
         "APP_URL": app_url.rstrip("/"),
+        "DOMAIN": domain or None,
         "PREFERRED_URL_SCHEME": parsed.scheme or "http",
-        "SERVER_NAME": parsed.netloc or None,
+        "SERVER_NAME": netloc,
     }
 
 
@@ -79,6 +91,7 @@ class Config:
     # Application settings
     APP_NAME = os.environ.get("APP_NAME", "Estronix")
     APP_URL = _APP_URL["APP_URL"]
+    DOMAIN = _APP_URL["DOMAIN"]
     PREFERRED_URL_SCHEME = _APP_URL["PREFERRED_URL_SCHEME"]
     SERVER_NAME = _APP_URL["SERVER_NAME"]
     GOOGLE_SITE_VERIFICATION = (os.environ.get("GOOGLE_SITE_VERIFICATION") or "").strip() or None

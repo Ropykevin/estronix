@@ -80,6 +80,15 @@ def validate_production_config(app):
     if not app.config.get("BREVO_API_KEY") and not app.config.get("MAIL_CONSOLE"):
         raise RuntimeError("BREVO_API_KEY is required in production when MAIL_CONSOLE is false.")
 
+    app_url = (app.config.get("APP_URL") or "").lower()
+    if "localhost" in app_url or "127.0.0.1" in app_url:
+        domain = app.config.get("DOMAIN")
+        if not domain:
+            app.logger.warning(
+                "APP_URL points to localhost in production. Set APP_URL=http://estronix.co.ke "
+                "or at least DOMAIN=estronix.co.ke for correct sitemap and SEO URLs."
+            )
+
     rate_limit_uri = app.config.get("RATELIMIT_STORAGE_URI", "memory://")
     if rate_limit_uri.startswith("memory://"):
         app.logger.warning(
