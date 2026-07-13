@@ -1,8 +1,8 @@
 """Application factory for Estronix E-Commerce Platform."""
 
 import os
-import secrets
 
+import click
 from flask import Flask, flash, redirect, render_template, request, url_for
 from werkzeug.exceptions import RequestEntityTooLarge
 
@@ -187,7 +187,8 @@ def _register_cli_commands(app):
     @app.cli.command("init-db")
     def init_db():
         """Initialize database with default roles and admin user."""
-        from app.models import Role, User
+        from app.models import Role
+        from app.services.admin_setup import ensure_admin
 
         db.create_all()
 
@@ -196,60 +197,20 @@ def _register_cli_commands(app):
                 db.session.add(Role(name=role_name, description=f"{role_name.title()} role"))
 
         db.session.commit()
-
-        admin_role = Role.query.filter_by(name="admin").first()
-        if not admin_role:
-            print("Database initialized successfully.")
-            return
-
-        admin_email = app.config["ADMIN_EMAIL"]
-        admin_password = app.config.get("ADMIN_INITIAL_PASSWORD") or ""
-
-        def _unique_username(base):
-            username = base[:80] or "admin"
-            suffix = 1
-            while User.query.filter_by(username=username).first():
-                username = f"{base[:75]}{suffix}"[:80]
-                suffix += 1
-            return username
-
-        admin_user = User.query.filter_by(email=admin_email).first()
-        legacy_admin = User.query.filter_by(email="admin@estronix.com").first()
-
-        if admin_user and admin_user.is_admin:
-            print(f"Admin user already exists: {admin_email}")
-        elif admin_user:
-            print(f"Skipping admin setup: {admin_email} is registered as a non-admin user.")
-        elif legacy_admin and legacy_admin.is_admin:
-            legacy_admin.email = admin_email
-            legacy_admin.username = _unique_username(admin_email.split("@")[0].replace(".", "_"))
-            db.session.commit()
-            print(f"Admin email updated to {admin_email}")
-        elif not User.query.filter_by(role_id=admin_role.id).first():
-            if not admin_password:
-                if app.config.get("TESTING"):
-                    admin_password = "Admin@123"
-                else:
-                    admin_password = secrets.token_urlsafe(16)
-                    print(
-                        f"Admin user created: {admin_email}\n"
-                        f"Generated password (save now): {admin_password}"
-                    )
-
-            admin = User(
-                email=admin_email,
-                username=_unique_username(admin_email.split("@")[0].replace(".", "_")),
-                first_name="System",
-                last_name="Admin",
-                is_verified=True,
-                role_id=admin_role.id,
-            )
-            admin.set_password(admin_password)
-            db.session.add(admin)
-            db.session.commit()
-            if app.config.get("ADMIN_INITIAL_PASSWORD"):
-                print(f"Admin user created: {admin_email} (password from ADMIN_INITIAL_PASSWORD)")
+        print(ensure_admin())
         print("Database initialized successfully.")
+
+    @app.cli.command("ensure-admin")
+    @click.option(
+        "--force",
+        is_flag=True,
+        help="Reset password from ADMIN_INITIAL_PASSWORD and promote the configured email to admin.",
+    )
+    def ensure_admin_cmd(force):
+        """Create or update the admin account from ADMIN_EMAIL / ADMIN_INITIAL_PASSWORD."""
+        from app.services.admin_setup import ensure_admin
+
+        print(ensure_admin(reset_password=force))
 
     @app.cli.command("seed-data")
     def seed_data():

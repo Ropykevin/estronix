@@ -70,6 +70,9 @@ if [[ "${OK}" -ne 1 ]]; then
   exit 1
 fi
 
+echo "==> Ensuring admin account exists..."
+docker compose exec -T web flask ensure-admin
+
 echo ""
 echo "Deploy complete."
 docker compose ps
