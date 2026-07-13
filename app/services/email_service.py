@@ -1,15 +1,42 @@
 """Email service for verification and password reset via Brevo API."""
 
+import json
+
 import requests
 from flask import current_app, render_template, url_for
 
 from app.utils.helpers import generate_token
 
 BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
+BREVO_SENDERS_URL = "https://api.brevo.com/v3/senders"
 
 
 class EmailService:
     """Handles transactional email delivery through Brevo."""
+
+    @staticmethod
+    def _api_headers():
+        api_key = current_app.config.get("BREVO_API_KEY")
+        if not api_key:
+            raise ValueError("BREVO_API_KEY is not configured")
+        return {
+            "api-key": api_key,
+            "Content-Type": "application/json",
+            "accept": "application/json",
+        }
+
+    @staticmethod
+    def _format_brevo_error(response):
+        try:
+            data = response.json()
+        except (json.JSONDecodeError, ValueError):
+            return response.text or f"HTTP {response.status_code}"
+
+        message = data.get("message") or data.get("error") or response.text
+        code = data.get("code")
+        if code:
+            return f"{message} (code: {code})"
+        return message
 
     @staticmethod
     def _sender():
@@ -19,20 +46,34 @@ class EmailService:
         }
 
     @classmethod
-    def _send_via_brevo(cls, subject, recipients, text_body, html_body):
-        api_key = current_app.config.get("BREVO_API_KEY")
-        if not api_key:
-            raise ValueError("BREVO_API_KEY is not configured")
+    def list_senders(cls):
+        response = requests.get(BREVO_SENDERS_URL, headers=cls._api_headers(), timeout=30)
+        response.raise_for_status()
+        return response.json().get("senders", [])
 
+    @classmethod
+    def check_sender_configuration(cls):
+        configured = current_app.config["MAIL_DEFAULT_SENDER"].strip().lower()
+        senders = cls.list_senders()
+        verified = [
+            s for s in senders
+            if str(s.get("email", "")).lower() == configured and s.get("active")
+        ]
+        return {
+            "configured_sender": configured,
+            "configured_sender_name": current_app.config.get("MAIL_DEFAULT_SENDER_NAME"),
+            "verified_match": bool(verified),
+            "senders": senders,
+        }
+
+    @classmethod
+    def _send_via_brevo(cls, subject, recipients, text_body, html_body):
+        sender = cls._sender()
         response = requests.post(
             BREVO_API_URL,
-            headers={
-                "api-key": api_key,
-                "Content-Type": "application/json",
-                "accept": "application/json",
-            },
+            headers=cls._api_headers(),
             json={
-                "sender": cls._sender(),
+                "sender": sender,
                 "to": [{"email": email} for email in recipients],
                 "subject": subject,
                 "htmlContent": html_body,
@@ -40,7 +81,16 @@ class EmailService:
             },
             timeout=30,
         )
-        response.raise_for_status()
+        if not response.ok:
+            detail = cls._format_brevo_error(response)
+            hint = (
+                f"Brevo rejected sender '{sender['email']}'. "
+                "Verify it under Brevo → Settings → Senders, or authenticate estronix.co.ke "
+                "and use an @estronix.co.ke address as MAIL_DEFAULT_SENDER."
+            )
+            if response.status_code in (400, 403):
+                raise RuntimeError(f"{detail}. {hint}")
+            raise RuntimeError(detail)
         return response.json() if response.content else {}
 
     @classmethod

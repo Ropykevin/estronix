@@ -212,6 +212,33 @@ def _register_cli_commands(app):
 
         print(ensure_admin(reset_password=force))
 
+    @app.cli.command("brevo-check")
+    def brevo_check():
+        """Show Brevo sender configuration and verification status."""
+        from app.services.email_service import EmailService
+
+        try:
+            status = EmailService.check_sender_configuration()
+        except Exception as e:
+            raise click.ClickException(str(e)) from e
+
+        click.echo(f"Configured sender: {status['configured_sender_name']} <{status['configured_sender']}>")
+        click.echo(f"Verified in Brevo: {'yes' if status['verified_match'] else 'NO'}")
+        click.echo("")
+        click.echo("Senders in Brevo account:")
+        if not status["senders"]:
+            click.echo("  (none — add one in Brevo → Settings → Senders)")
+        for sender in status["senders"]:
+            active = "verified" if sender.get("active") else "NOT verified"
+            click.echo(f"  - {sender.get('name')} <{sender.get('email')}> [{active}]")
+
+        if not status["verified_match"]:
+            click.echo("")
+            click.echo(
+                "Fix: In Brevo, verify the sender above or set MAIL_DEFAULT_SENDER "
+                "to a verified @estronix.co.ke address."
+            )
+
     @app.cli.command("test-email")
     @click.option(
         "--to",
