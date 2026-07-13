@@ -36,3 +36,5 @@ test
 test_cases/
 
 .env
+.env.example
+/env.example
