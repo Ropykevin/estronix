@@ -168,6 +168,7 @@ def _register_context_processors(app):
         return {
             "app_name": app.config["APP_NAME"],
             "app_url": app.config.get("APP_URL", "http://localhost:5000").rstrip("/"),
+            "google_site_verification": app.config.get("GOOGLE_SITE_VERIFICATION"),
             "cart_count": cart_count,
             "nav_categories": nav_categories,
             "canonical_url": None,
@@ -235,9 +236,52 @@ def _register_cli_commands(app):
         if not status["verified_match"]:
             click.echo("")
             click.echo(
-                "Fix: In Brevo, verify the sender above or set MAIL_DEFAULT_SENDER "
-                "to a verified @estronix.co.ke address."
+                "Fix: In Brevo → Settings → Senders, add and verify "
+                f"{status['configured_sender']} (enter the 6-digit code sent to that inbox)."
             )
+
+    @app.cli.command("seo-check")
+    def seo_check():
+        """Verify SEO endpoints and print Google Search Console setup steps."""
+        app_url = app.config.get("APP_URL", "").rstrip("/")
+        domain = app.config.get("SERVER_NAME") or "(not set)"
+
+        click.echo(f"APP_URL: {app_url or '(not set)'}")
+        click.echo(f"SERVER_NAME: {domain}")
+        click.echo("")
+
+        with app.test_request_context(base_url=app_url or "http://localhost/"):
+            robots_url = url_for("main.robots_txt", _external=True)
+            sitemap_url = url_for("main.sitemap", _external=True)
+            home_url = url_for("main.index", _external=True)
+
+        click.echo(f"Homepage:  {home_url}")
+        click.echo(f"Robots:    {robots_url}")
+        click.echo(f"Sitemap:   {sitemap_url}")
+        click.echo("")
+
+        with app.test_client() as client:
+            robots = client.get("/robots.txt")
+            sitemap = client.get("/sitemap.xml")
+            home = client.get("/")
+
+        click.echo(f"GET /robots.txt   -> {robots.status_code}")
+        click.echo(f"GET /sitemap.xml  -> {sitemap.status_code}")
+        click.echo(f"GET /             -> {home.status_code}")
+
+        if app_url and sitemap.status_code == 200:
+            body = sitemap.get_data(as_text=True)
+            if app_url.replace("https://", "").replace("http://", "") not in body:
+                click.echo("")
+                click.echo("WARNING: sitemap URLs may not match APP_URL. Set APP_URL in .env and redeploy.")
+
+        click.echo("")
+        click.echo("Google Search Console:")
+        click.echo("  1. https://search.google.com/search-console")
+        click.echo(f"  2. Add property: {app_url or 'https://estronix.co.ke'}")
+        click.echo("  3. Verify via HTML meta tag -> set GOOGLE_SITE_VERIFICATION in .env")
+        click.echo(f"  4. Submit sitemap: {sitemap_url}")
+        click.echo("  5. Request indexing for the homepage (URL Inspection tool)")
 
     @app.cli.command("test-email")
     @click.option(

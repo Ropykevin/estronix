@@ -32,6 +32,13 @@ def test_sitemap(client):
     response = client.get("/sitemap.xml")
     assert response.status_code == 200
     assert b"urlset" in response.data
+    assert b"/products/" in response.data
+
+
+def test_robots_includes_sitemap(client):
+    response = client.get("/robots.txt")
+    assert response.status_code == 200
+    assert b"Sitemap:" in response.data
 
 
 def test_admin_requires_auth(client):

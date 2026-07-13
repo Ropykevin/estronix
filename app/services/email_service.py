@@ -85,8 +85,8 @@ class EmailService:
             detail = cls._format_brevo_error(response)
             hint = (
                 f"Brevo rejected sender '{sender['email']}'. "
-                "Verify it under Brevo → Settings → Senders, or authenticate estronix.co.ke "
-                "and use an @estronix.co.ke address as MAIL_DEFAULT_SENDER."
+                "Add and verify this address under Brevo → Settings → Senders. "
+                "If you see 'SMTP account is not yet activated', contact Brevo support."
             )
             if response.status_code in (400, 403):
                 raise RuntimeError(f"{detail}. {hint}")

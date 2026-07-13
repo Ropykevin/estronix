@@ -2,10 +2,26 @@
 
 import os
 from datetime import timedelta
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def _app_url_settings():
+    app_url = os.environ.get("APP_URL", "http://localhost:5000").strip()
+    if app_url and "://" not in app_url:
+        app_url = f"https://{app_url}"
+    parsed = urlparse(app_url)
+    return {
+        "APP_URL": app_url.rstrip("/"),
+        "PREFERRED_URL_SCHEME": parsed.scheme or "http",
+        "SERVER_NAME": parsed.netloc or None,
+    }
+
+
+_APP_URL = _app_url_settings()
 
 
 def _env_bool(key, default="False"):
@@ -62,7 +78,11 @@ class Config:
 
     # Application settings
     APP_NAME = os.environ.get("APP_NAME", "Estronix")
-    APP_URL = os.environ.get("APP_URL", "http://localhost:5000")
+    APP_URL = _APP_URL["APP_URL"]
+    PREFERRED_URL_SCHEME = _APP_URL["PREFERRED_URL_SCHEME"]
+    SERVER_NAME = _APP_URL["SERVER_NAME"]
+    GOOGLE_SITE_VERIFICATION = (os.environ.get("GOOGLE_SITE_VERIFICATION") or "").strip() or None
+    GOOGLE_SITE_VERIFICATION_HTML = (os.environ.get("GOOGLE_SITE_VERIFICATION_HTML") or "").strip() or None
     ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "estronix82@gmail.com").strip().lower()
     ADMIN_INITIAL_PASSWORD = (
         os.environ.get("ADMIN_INITIAL_PASSWORD") or os.environ.get("ADMIN_PASSWORD") or ""
@@ -128,3 +148,7 @@ class TestingConfig(Config):
     DEBUG = True
     WTF_CSRF_ENABLED = False
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SERVER_NAME = "localhost"
+    APP_URL = "http://localhost"
+    GOOGLE_SITE_VERIFICATION = None
+    GOOGLE_SITE_VERIFICATION_HTML = None

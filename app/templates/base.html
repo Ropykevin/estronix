@@ -10,6 +10,9 @@
     <meta name="robots" content="{% block robots %}index, follow, max-image-preview:large{% endblock %}">
     <meta name="author" content="{{ app_name }}">
     <meta name="geo.region" content="KE">
+    {% if google_site_verification %}
+    <meta name="google-site-verification" content="{{ google_site_verification }}">
+    {% endif %}
     {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
 
     <meta name="twitter:card" content="summary_large_image">
