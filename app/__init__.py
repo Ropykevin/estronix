@@ -198,21 +198,47 @@ def _register_cli_commands(app):
         db.session.commit()
 
         admin_role = Role.query.filter_by(name="admin").first()
-        if admin_role and not User.query.filter_by(email="admin@estronix.com").first():
-            admin_password = os.environ.get("ADMIN_INITIAL_PASSWORD", "").strip()
+        if not admin_role:
+            print("Database initialized successfully.")
+            return
+
+        admin_email = app.config["ADMIN_EMAIL"]
+        admin_password = app.config.get("ADMIN_INITIAL_PASSWORD") or ""
+
+        def _unique_username(base):
+            username = base[:80] or "admin"
+            suffix = 1
+            while User.query.filter_by(username=username).first():
+                username = f"{base[:75]}{suffix}"[:80]
+                suffix += 1
+            return username
+
+        admin_user = User.query.filter_by(email=admin_email).first()
+        legacy_admin = User.query.filter_by(email="admin@estronix.com").first()
+
+        if admin_user and admin_user.is_admin:
+            print(f"Admin user already exists: {admin_email}")
+        elif admin_user:
+            print(f"Skipping admin setup: {admin_email} is registered as a non-admin user.")
+        elif legacy_admin and legacy_admin.is_admin:
+            legacy_admin.email = admin_email
+            legacy_admin.username = _unique_username(admin_email.split("@")[0].replace(".", "_"))
+            db.session.commit()
+            print(f"Admin email updated to {admin_email}")
+        elif not User.query.filter_by(role_id=admin_role.id).first():
             if not admin_password:
                 if app.config.get("TESTING"):
                     admin_password = "Admin@123"
                 else:
                     admin_password = secrets.token_urlsafe(16)
                     print(
-                        "Admin user created: admin@estronix.com\n"
+                        f"Admin user created: {admin_email}\n"
                         f"Generated password (save now): {admin_password}"
                     )
 
             admin = User(
-                email="admin@estronix.com",
-                username="admin",
+                email=admin_email,
+                username=_unique_username(admin_email.split("@")[0].replace(".", "_")),
                 first_name="System",
                 last_name="Admin",
                 is_verified=True,
@@ -221,8 +247,8 @@ def _register_cli_commands(app):
             admin.set_password(admin_password)
             db.session.add(admin)
             db.session.commit()
-            if os.environ.get("ADMIN_INITIAL_PASSWORD"):
-                print("Admin user created: admin@estronix.com (password from ADMIN_INITIAL_PASSWORD)")
+            if app.config.get("ADMIN_INITIAL_PASSWORD"):
+                print(f"Admin user created: {admin_email} (password from ADMIN_INITIAL_PASSWORD)")
         print("Database initialized successfully.")
 
     @app.cli.command("seed-data")

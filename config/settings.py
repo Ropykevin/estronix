@@ -63,6 +63,10 @@ class Config:
     # Application settings
     APP_NAME = os.environ.get("APP_NAME", "Estronix")
     APP_URL = os.environ.get("APP_URL", "http://localhost:5000")
+    ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "estronix82@gmail.com").strip().lower()
+    ADMIN_INITIAL_PASSWORD = (
+        os.environ.get("ADMIN_INITIAL_PASSWORD") or os.environ.get("ADMIN_PASSWORD") or ""
+    ).strip() or None
     CONTACT_PHONE = os.environ.get("CONTACT_PHONE", "0757840780")
     CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "estronix82@gmail.com")
     WHATSAPP_NUMBER = os.environ.get("WHATSAPP_NUMBER", os.environ.get("CONTACT_PHONE", "0757840780"))
