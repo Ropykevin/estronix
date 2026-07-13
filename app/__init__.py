@@ -285,7 +285,7 @@ def _register_cli_commands(app):
         click.echo("")
         click.echo("Google Search Console:")
         click.echo("  1. https://search.google.com/search-console")
-        click.echo(f"  2. Add property: {app_url or 'https://estronix.co.ke'}")
+        click.echo(f"  2. Add property: {public_base}")
         click.echo("  3. Verify via HTML meta tag -> set GOOGLE_SITE_VERIFICATION in .env")
         click.echo(f"  4. Submit sitemap: {sitemap_url}")
         click.echo("  5. Request indexing for the homepage (URL Inspection tool)")
