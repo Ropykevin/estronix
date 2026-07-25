@@ -108,6 +108,7 @@
                     <h6 class="text-muted mb-3">Product Images</h6>
 
                     {% if product and product.images|length > 0 %}
+                    <p class="small text-muted mb-2">Current images — remove wrong ones or choose a different primary image.</p>
                     <div class="product-image-gallery mb-3">
                         {% for image in product.images %}
                         <div class="product-image-item{% if image.is_primary %} is-primary{% endif %}">
@@ -121,21 +122,24 @@
                                 {% else %}
                                 <span class="badge bg-primary">Primary</span>
                                 {% endif %}
-                                <form action="{{ url_for('admin.delete_product_image', product_id=product.id, image_id=image.id) }}" method="POST" onsubmit="return confirm('Remove this image?');">
+                                <form action="{{ url_for('admin.delete_product_image', product_id=product.id, image_id=image.id) }}" method="POST" onsubmit="return confirm('Remove this image from the product?');">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete image">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
                                 </form>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
-                    <p class="text-muted small">Up to 10 images per product. The primary image appears on listings.</p>
+                    <p class="text-muted small mb-3">To replace an image: delete it, then upload the correct file below.</p>
                     {% endif %}
 
                     {{ form.images.label(class="form-label") }}
-                    {{ form.images(class="form-control" + (" is-invalid" if form.images.errors else ""), accept="image/*", multiple=true) }}
+                    {{ form.images(class="form-control" + (" is-invalid" if form.images.errors else ""), accept="image/*", multiple=true, id="productImagesInput") }}
+                    <div id="productImagesPreview" class="mt-3 d-none"></div>
                     {% for error in form.images.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-                    <div class="form-text">JPG, PNG, GIF, or WebP. Up to 8 MB per image, 64 MB total per save.</div>
+                    <div class="form-text">JPG, PNG, GIF, or WebP. Up to 8 MB per image. On create, preview selected files and remove mistakes before saving.</div>
 
                     {% if product %}
                     <hr>
@@ -154,4 +158,8 @@
         </div>
     </div>
 </form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/admin-product-images.js') }}"></script>
 {% endblock %}
