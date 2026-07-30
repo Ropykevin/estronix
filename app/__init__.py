@@ -132,7 +132,7 @@ def _register_security_headers(app):
             "script-src 'self' cdn.jsdelivr.net 'unsafe-inline'; "
             "style-src 'self' cdn.jsdelivr.net fonts.googleapis.com 'unsafe-inline'; "
             "font-src 'self' fonts.gstatic.com cdn.jsdelivr.net; "
-            "img-src 'self' data: https:; "
+            "img-src 'self' data: blob: https:; "
             "connect-src 'self'; "
             "frame-src https://www.youtube.com https://www.youtube-nocookie.com;"
         )

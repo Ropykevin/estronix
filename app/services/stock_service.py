@@ -67,10 +67,7 @@ class StockService:
 
     @classmethod
     def _delivery_estimate(cls, product):
-        days = product.delivery_estimate_days or 3
-        if days <= 2:
-            return "Delivery in 1–2 business days"
-        return f"Delivery in {days}–{days + 2} business days"
+        return "Instant delivery"
 
     @classmethod
     def sync_product_stock(cls, product_id):

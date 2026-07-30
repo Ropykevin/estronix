@@ -13,8 +13,8 @@
 
     function syncInputFiles() {
         var dataTransfer = new DataTransfer();
-        selectedFiles.forEach(function (file) {
-            dataTransfer.items.add(file);
+        selectedFiles.forEach(function (entry) {
+            dataTransfer.items.add(entry.file);
         });
         input.files = dataTransfer.files;
     }
@@ -28,27 +28,30 @@
         }
 
         preview.classList.remove("d-none");
-        preview.innerHTML =
-            '<p class="small text-muted mb-2">Selected for upload — remove any wrong image before saving.</p>';
+
+        var intro = document.createElement("p");
+        intro.className = "small text-muted mb-2";
+        intro.textContent = "Selected for upload — remove any wrong image before saving.";
+        preview.appendChild(intro);
 
         var grid = document.createElement("div");
         grid.className = "product-image-gallery";
 
-        selectedFiles.forEach(function (file, index) {
+        selectedFiles.forEach(function (entry, index) {
             var item = document.createElement("div");
-            item.className = "product-image-item";
+            item.className = "product-image-item product-image-pending";
 
             var img = document.createElement("img");
-            img.className = "img-fluid rounded border";
-            img.alt = file.name;
-            img.src = URL.createObjectURL(file);
+            img.className = "img-fluid rounded border product-image-preview";
+            img.alt = entry.file.name;
+            img.src = entry.previewUrl;
 
             var actions = document.createElement("div");
             actions.className = "product-image-actions";
 
             var name = document.createElement("span");
             name.className = "small text-truncate";
-            name.textContent = file.name;
+            name.textContent = entry.file.name;
 
             var removeBtn = document.createElement("button");
             removeBtn.type = "button";
@@ -70,17 +73,33 @@
         preview.appendChild(grid);
     }
 
+    function addFile(file) {
+        if (!file.type.startsWith("image/")) {
+            return;
+        }
+
+        var reader = new FileReader();
+        reader.onload = function (event) {
+            selectedFiles.push({
+                file: file,
+                previewUrl: event.target.result,
+            });
+            syncInputFiles();
+            renderPreview();
+        };
+        reader.readAsDataURL(file);
+    }
+
     input.addEventListener("change", function () {
         Array.from(input.files || []).forEach(function (file) {
             var key = fileKey(file);
-            var exists = selectedFiles.some(function (existing) {
-                return fileKey(existing) === key;
+            var exists = selectedFiles.some(function (entry) {
+                return fileKey(entry.file) === key;
             });
             if (!exists) {
-                selectedFiles.push(file);
+                addFile(file);
             }
         });
-        syncInputFiles();
-        renderPreview();
+        input.value = "";
     });
 })();
