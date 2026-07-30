@@ -72,9 +72,22 @@ class Config:
     WTF_CSRF_ENABLED = True
     WTF_CSRF_TIME_LIMIT = int(os.environ.get("WTF_CSRF_TIME_LIMIT", 3600))
 
-    # Brevo transactional email (REST API — not SMTP)
-    # Create an API key at: Brevo → SMTP & API → API Keys (starts with xkeysib-)
-    BREVO_API_KEY = (os.environ.get("BREVO_API_KEY") or "").strip() or None
+    # Email (SMTP via Flask-Mail — Brevo, Gmail, etc.)
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp-relay.brevo.com")
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", 587))
+    MAIL_USE_TLS = _env_bool("MAIL_USE_TLS", "True")
+    MAIL_USE_SSL = _env_bool("MAIL_USE_SSL")
+    MAIL_USERNAME = (
+        os.environ.get("MAIL_USERNAME")
+        or os.environ.get("MAIL_DEFAULT_SENDER")
+        or os.environ.get("CONTACT_EMAIL")
+        or "estronix82@gmail.com"
+    ).strip()
+    MAIL_PASSWORD = (
+        os.environ.get("MAIL_PASSWORD")
+        or os.environ.get("BREVO_SMTP_KEY")
+        or ""
+    ).strip() or None
     MAIL_DEFAULT_SENDER = (
         os.environ.get("MAIL_DEFAULT_SENDER")
         or os.environ.get("CONTACT_EMAIL")

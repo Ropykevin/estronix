@@ -121,12 +121,16 @@ def _add_product_images(product, files):
 
 def _ensure_product_primary_image(product):
     """Ensure one image is marked primary when images exist."""
-    if any(img.is_primary for img in product.images):
+    images = (
+        ProductImage.query.filter_by(product_id=product.id)
+        .order_by(ProductImage.sort_order, ProductImage.id)
+        .all()
+    )
+    if not images:
         return
-
-    first_image = sorted(product.images, key=lambda img: (img.sort_order, img.id))[0] if product.images else None
-    if first_image:
-        first_image.is_primary = True
+    if any(img.is_primary for img in images):
+        return
+    images[0].is_primary = True
 
 
 def _sku_taken(sku, exclude_product_id=None):
@@ -346,15 +350,25 @@ def delete_product_image(product_id, image_id):
     product = Product.query.get_or_404(product_id)
     image = ProductImage.query.filter_by(id=image_id, product_id=product.id).first_or_404()
     was_primary = image.is_primary
+    image_url = image.image_url
 
-    delete_upload(image.image_url)
+    delete_upload(image_url)
     db.session.delete(image)
     db.session.flush()
 
     if was_primary:
         _ensure_product_primary_image(product)
 
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception(
+            "Failed to delete product image %s for product %s", image_id, product_id
+        )
+        flash("Could not remove the image. Please try again.", "danger")
+        return redirect(url_for("admin.edit_product", product_id=product.id))
+
     flash("Image removed.", "success")
     return redirect(url_for("admin.edit_product", product_id=product.id))
 

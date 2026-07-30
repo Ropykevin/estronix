@@ -3,7 +3,7 @@
 from decimal import Decimal
 
 from app.extensions import db
-from app.models import Category, Product, ProductStatus, Role, User
+from app.models import Category, Product, ProductImage, ProductStatus, Role, User
 
 
 def _login_admin(client, app):
@@ -104,3 +104,45 @@ def test_admin_edit_product_updates(client, app):
         assert product.name == "Test Phone Updated"
         assert float(product.price) == 1500
         assert product.stock_quantity == 10
+
+
+def test_admin_delete_product_image(client, app):
+    _login_admin(client, app)
+    product_id, _ = _seed_product(app)
+
+    with app.app_context():
+        product = db.session.get(Product, product_id)
+        primary = ProductImage(
+            product_id=product.id,
+            image_url="/static/uploads/products/primary.jpg",
+            is_primary=True,
+            sort_order=0,
+        )
+        secondary = ProductImage(
+            product_id=product.id,
+            image_url="/static/uploads/products/secondary.jpg",
+            is_primary=False,
+            sort_order=1,
+        )
+        db.session.add_all([primary, secondary])
+        db.session.commit()
+        primary_id = primary.id
+        secondary_id = secondary.id
+
+    edit_page = client.get(f"/admin/products/{product_id}/edit")
+    csrf_token = _csrf_from_html(edit_page.get_data(as_text=True))
+
+    response = client.post(
+        f"/admin/products/{product_id}/images/{primary_id}/delete",
+        data={"csrf_token": csrf_token},
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert b"Image removed." in response.data
+
+    with app.app_context():
+        assert db.session.get(ProductImage, primary_id) is None
+        remaining = db.session.get(ProductImage, secondary_id)
+        assert remaining is not None
+        assert remaining.is_primary is True

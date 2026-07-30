@@ -77,8 +77,11 @@ def validate_production_config(app):
             "Append ?token=<secret> to MPESA_CALLBACK_URL."
         )
 
-    if not app.config.get("BREVO_API_KEY") and not app.config.get("MAIL_CONSOLE"):
-        raise RuntimeError("BREVO_API_KEY is required in production when MAIL_CONSOLE is false.")
+    if not app.config.get("MAIL_PASSWORD") and not app.config.get("MAIL_CONSOLE"):
+        raise RuntimeError(
+            "MAIL_PASSWORD is required in production when MAIL_CONSOLE is false. "
+            "Use your Brevo SMTP key (Brevo → SMTP & API → SMTP keys), not the REST API key."
+        )
 
     app_url = (app.config.get("APP_URL") or "").lower()
     if "localhost" in app_url or "127.0.0.1" in app_url:

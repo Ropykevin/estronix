@@ -39,12 +39,24 @@ def save_upload(file, subfolder="products"):
 
 def delete_upload(relative_url):
     """Remove a previously uploaded file from disk."""
-    if not relative_url or not relative_url.startswith("/static/uploads/"):
+    if not relative_url:
         return
 
-    filepath = os.path.join(current_app.root_path, relative_url.lstrip("/"))
-    if os.path.isfile(filepath):
-        os.remove(filepath)
+    path = relative_url
+    if path.startswith(("http://", "https://")):
+        from urllib.parse import urlparse
+
+        path = urlparse(path).path
+
+    if not path.startswith("/static/uploads/"):
+        return
+
+    filepath = os.path.join(current_app.root_path, path.lstrip("/"))
+    try:
+        if os.path.isfile(filepath):
+            os.remove(filepath)
+    except OSError as exc:
+        current_app.logger.warning("Failed to delete upload file %s: %s", filepath, exc)
 
 
 def generate_token(data, salt="estronix-token"):

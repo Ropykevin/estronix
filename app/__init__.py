@@ -215,32 +215,30 @@ def _register_cli_commands(app):
 
         print(ensure_admin(reset_password=force))
 
-    @app.cli.command("brevo-check")
-    def brevo_check():
-        """Show Brevo sender configuration and verification status."""
+    @app.cli.command("mail-check")
+    def mail_check():
+        """Show SMTP configuration for outbound email."""
         from app.services.email_service import EmailService
 
-        try:
-            status = EmailService.check_sender_configuration()
-        except Exception as e:
-            raise click.ClickException(str(e)) from e
+        status = EmailService.check_smtp_configuration()
+        click.echo(f"SMTP server:   {status['mail_server']}:{status['mail_port']}")
+        click.echo(f"TLS enabled:   {status['mail_use_tls']}")
+        click.echo(f"SMTP username: {status['mail_username']}")
+        click.echo(f"SMTP password: {'set' if status['mail_password_set'] else 'NOT SET'}")
+        click.echo(
+            f"From address:  {status['mail_default_sender_name']} "
+            f"<{status['mail_default_sender']}>"
+        )
 
-        click.echo(f"Configured sender: {status['configured_sender_name']} <{status['configured_sender']}>")
-        click.echo(f"Verified in Brevo: {'yes' if status['verified_match'] else 'NO'}")
-        click.echo("")
-        click.echo("Senders in Brevo account:")
-        if not status["senders"]:
-            click.echo("  (none — add one in Brevo → Settings → Senders)")
-        for sender in status["senders"]:
-            active = "verified" if sender.get("active") else "NOT verified"
-            click.echo(f"  - {sender.get('name')} <{sender.get('email')}> [{active}]")
-
-        if not status["verified_match"]:
+        if not status["mail_password_set"]:
             click.echo("")
             click.echo(
-                "Fix: In Brevo → Settings → Senders, add and verify "
-                f"{status['configured_sender']} (enter the 6-digit code sent to that inbox)."
+                "Fix: Set MAIL_PASSWORD in .env to your Brevo SMTP key "
+                "(Brevo → SMTP & API → SMTP keys). This is not the xkeysib- API key."
             )
+        else:
+            click.echo("")
+            click.echo("Test with: flask test-email --to your@email.com")
 
     @app.cli.command("seo-check")
     def seo_check():
@@ -299,7 +297,7 @@ def _register_cli_commands(app):
     @click.option("--subject", default=None, help="Email subject line.")
     @click.option("--message", default=None, help="Plain-text email body.")
     def test_email(to, subject, message):
-        """Send a test email via Brevo."""
+        """Send a test email via SMTP."""
         from app.services.email_service import EmailService
 
         recipient = (

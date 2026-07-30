@@ -1,105 +1,60 @@
-"""Email service for verification and password reset via Brevo API."""
+"""Email service for verification, password reset, and order emails via SMTP."""
 
-import json
-
-import requests
 from flask import current_app, render_template, url_for
+from flask_mail import Message
 
+from app.extensions import mail
 from app.utils.helpers import generate_token
-
-BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
-BREVO_SENDERS_URL = "https://api.brevo.com/v3/senders"
 
 
 class EmailService:
-    """Handles transactional email delivery through Brevo."""
-
-    @staticmethod
-    def _api_headers():
-        api_key = current_app.config.get("BREVO_API_KEY")
-        if not api_key:
-            raise ValueError("BREVO_API_KEY is not configured")
-        return {
-            "api-key": api_key,
-            "Content-Type": "application/json",
-            "accept": "application/json",
-        }
-
-    @staticmethod
-    def _format_brevo_error(response):
-        try:
-            data = response.json()
-        except (json.JSONDecodeError, ValueError):
-            return response.text or f"HTTP {response.status_code}"
-
-        message = data.get("message") or data.get("error") or response.text
-        code = data.get("code")
-        if code:
-            return f"{message} (code: {code})"
-        return message
+    """Handles transactional email delivery through SMTP (Flask-Mail)."""
 
     @staticmethod
     def _sender():
+        name = current_app.config.get("MAIL_DEFAULT_SENDER_NAME", current_app.config["APP_NAME"])
+        email = current_app.config["MAIL_DEFAULT_SENDER"]
+        return (name, email)
+
+    @classmethod
+    def check_smtp_configuration(cls):
+        password = current_app.config.get("MAIL_PASSWORD")
         return {
-            "name": current_app.config.get("MAIL_DEFAULT_SENDER_NAME", current_app.config["APP_NAME"]),
-            "email": current_app.config["MAIL_DEFAULT_SENDER"],
+            "mail_server": current_app.config.get("MAIL_SERVER"),
+            "mail_port": current_app.config.get("MAIL_PORT"),
+            "mail_use_tls": current_app.config.get("MAIL_USE_TLS"),
+            "mail_username": current_app.config.get("MAIL_USERNAME"),
+            "mail_password_set": bool(password and str(password).strip()),
+            "mail_default_sender": current_app.config.get("MAIL_DEFAULT_SENDER"),
+            "mail_default_sender_name": current_app.config.get("MAIL_DEFAULT_SENDER_NAME"),
         }
 
     @classmethod
-    def list_senders(cls):
-        response = requests.get(BREVO_SENDERS_URL, headers=cls._api_headers(), timeout=30)
-        response.raise_for_status()
-        return response.json().get("senders", [])
-
-    @classmethod
-    def check_sender_configuration(cls):
-        configured = current_app.config["MAIL_DEFAULT_SENDER"].strip().lower()
-        senders = cls.list_senders()
-        verified = [
-            s for s in senders
-            if str(s.get("email", "")).lower() == configured and s.get("active")
-        ]
-        return {
-            "configured_sender": configured,
-            "configured_sender_name": current_app.config.get("MAIL_DEFAULT_SENDER_NAME"),
-            "verified_match": bool(verified),
-            "senders": senders,
-        }
-
-    @classmethod
-    def _send_via_brevo(cls, subject, recipients, text_body, html_body):
-        sender = cls._sender()
-        response = requests.post(
-            BREVO_API_URL,
-            headers=cls._api_headers(),
-            json={
-                "sender": sender,
-                "to": [{"email": email} for email in recipients],
-                "subject": subject,
-                "htmlContent": html_body,
-                "textContent": text_body,
-            },
-            timeout=30,
-        )
-        if not response.ok:
-            detail = cls._format_brevo_error(response)
-            hint = (
-                f"Brevo rejected sender '{sender['email']}'. "
-                "Add and verify this address under Brevo → Settings → Senders. "
-                "If you see 'SMTP account is not yet activated', contact Brevo support."
+    def _send_via_smtp(cls, subject, recipients, text_body, html_body):
+        password = (current_app.config.get("MAIL_PASSWORD") or "").strip()
+        if not password:
+            raise ValueError(
+                "MAIL_PASSWORD is not configured. "
+                "Create an SMTP key in Brevo → SMTP & API → SMTP keys."
             )
-            if response.status_code in (400, 403):
-                raise RuntimeError(f"{detail}. {hint}")
-            raise RuntimeError(detail)
-        return response.json() if response.content else {}
+
+        message = Message(
+            subject=subject,
+            recipients=recipients,
+            body=text_body,
+            html=html_body,
+            sender=cls._sender(),
+        )
+        mail.send(message)
+        return {"status": "sent", "recipients": recipients}
 
     @classmethod
     def send_test_email(cls, recipient, subject=None, message=None):
-        """Send a test email via Brevo; raises on failure."""
+        """Send a test email via SMTP; raises on failure."""
         recipient = recipient.strip().lower()
         app_name = current_app.config["APP_NAME"]
         subject = subject or f"Test email from {app_name}"
-        message = message or f"If you received this, Brevo email is working for {app_name}."
+        message = message or f"If you received this, SMTP email is working for {app_name}."
         html_body = f"<p>{message}</p>"
 
         if current_app.config.get("MAIL_SUPPRESS_SEND"):
@@ -116,8 +71,8 @@ class EmailService:
             )
             return {"status": "console", "to": recipient}
 
-        result = cls._send_via_brevo(subject, [recipient], message, html_body)
-        current_app.logger.info("Brevo test email sent to %s", recipient)
+        result = cls._send_via_smtp(subject, [recipient], message, html_body)
+        current_app.logger.info("SMTP test email sent to %s", recipient)
         return {"status": "sent", "to": recipient, "response": result}
 
     @staticmethod
@@ -137,19 +92,16 @@ class EmailService:
             return
 
         try:
-            EmailService._send_via_brevo(subject, recipients, text_body, html_body)
-        except requests.HTTPError as e:
-            detail = e.response.text if e.response is not None else str(e)
-            current_app.logger.error("Brevo email send failed: %s", detail)
+            EmailService._send_via_smtp(subject, recipients, text_body, html_body)
+        except Exception as e:
+            current_app.logger.error("SMTP email send failed: %s", e)
             if current_app.debug:
                 current_app.logger.warning(
-                    "\n%s\nBrevo failed — use this link in dev:\n%s\n%s",
+                    "\n%s\nSMTP failed — use this link in dev:\n%s\n%s",
                     "=" * 60,
                     text_body,
                     "=" * 60,
                 )
-        except Exception as e:
-            current_app.logger.error("Brevo email send failed: %s", e)
 
     @classmethod
     def send_verification_email(cls, user):
