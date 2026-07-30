@@ -16,7 +16,7 @@ from app.services.analytics_service import AnalyticsService
 from app.services.inventory_service import InventoryService
 from app.services.order_service import OrderService
 from app.utils.decorators import admin_required
-from app.utils.helpers import save_upload
+from app.utils.helpers import delete_upload, save_upload
 from app.utils.sanitizer import sanitize_html
 from flask_login import logout_user
 
