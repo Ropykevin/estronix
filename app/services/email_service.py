@@ -18,24 +18,30 @@ class EmailService:
 
     @classmethod
     def check_smtp_configuration(cls):
-        password = current_app.config.get("MAIL_PASSWORD")
+        password = (current_app.config.get("MAIL_PASSWORD") or "").strip()
+        from app.utils.security import PLACEHOLDER_MAIL_PASSWORDS
+
+        password_ok = bool(password) and password not in PLACEHOLDER_MAIL_PASSWORDS
         return {
             "mail_server": current_app.config.get("MAIL_SERVER"),
             "mail_port": current_app.config.get("MAIL_PORT"),
             "mail_use_tls": current_app.config.get("MAIL_USE_TLS"),
             "mail_username": current_app.config.get("MAIL_USERNAME"),
-            "mail_password_set": bool(password and str(password).strip()),
+            "mail_password_set": password_ok,
             "mail_default_sender": current_app.config.get("MAIL_DEFAULT_SENDER"),
             "mail_default_sender_name": current_app.config.get("MAIL_DEFAULT_SENDER_NAME"),
         }
 
     @classmethod
     def _send_via_smtp(cls, subject, recipients, text_body, html_body):
+        from app.utils.security import PLACEHOLDER_MAIL_PASSWORDS
+
         password = (current_app.config.get("MAIL_PASSWORD") or "").strip()
-        if not password:
+        if not password or password in PLACEHOLDER_MAIL_PASSWORDS:
             raise ValueError(
                 "MAIL_PASSWORD is not configured. "
-                "Create an SMTP key in Brevo → SMTP & API → SMTP keys."
+                "Create an SMTP key in Brevo → SMTP & API → SMTP keys, "
+                "or set MAIL_CONSOLE=True in .env."
             )
 
         message = Message(

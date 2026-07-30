@@ -11,6 +11,18 @@ WEAK_SECRET_KEYS = frozenset({
     "change-this-to-a-long-random-secret-key",
 })
 
+PLACEHOLDER_MAIL_PASSWORDS = frozenset({
+    "",
+    "your-brevo-smtp-key",
+    "your-smtp-password",
+    "change-me",
+})
+
+
+def _mail_password_configured(app):
+    password = (app.config.get("MAIL_PASSWORD") or "").strip()
+    return password not in PLACEHOLDER_MAIL_PASSWORDS
+
 
 def is_safe_redirect_url(target):
     """Allow only same-site relative paths (blocks open redirects)."""
@@ -77,10 +89,11 @@ def validate_production_config(app):
             "Append ?token=<secret> to MPESA_CALLBACK_URL."
         )
 
-    if not app.config.get("MAIL_PASSWORD") and not app.config.get("MAIL_CONSOLE"):
-        raise RuntimeError(
-            "MAIL_PASSWORD is required in production when MAIL_CONSOLE is false. "
-            "Use your Brevo SMTP key (Brevo → SMTP & API → SMTP keys), not the REST API key."
+    if not _mail_password_configured(app) and not app.config.get("MAIL_CONSOLE"):
+        app.logger.warning(
+            "MAIL_PASSWORD is not configured (Brevo → SMTP & API → SMTP keys). "
+            "Set MAIL_PASSWORD in .env, or use MAIL_CONSOLE=True until SMTP is ready. "
+            "Verification and order emails will not send until then."
         )
 
     app_url = (app.config.get("APP_URL") or "").lower()
