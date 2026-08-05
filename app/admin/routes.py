@@ -219,8 +219,13 @@ def dashboard():
 
 @admin_bp.route("/products")
 def products():
-    products = Product.query.order_by(Product.created_at.desc()).all()
-    return render_template("admin/products/list.html", products=products)
+    page = request.args.get("page", 1, type=int)
+    search = request.args.get("q", "")
+    query = Product.query
+    if search:
+        query = query.filter(Product.name.ilike(f"%{search}%") | Product.sku.ilike(f"%{search}%"))
+    pagination = query.order_by(Product.created_at.desc()).paginate(page=page, per_page=20, error_out=False)
+    return render_template("admin/products/list.html", pagination=pagination, search=search)
 
 
 @admin_bp.route("/products/create", methods=["GET", "POST"])
@@ -418,17 +423,13 @@ def create_category():
 
 @admin_bp.route("/orders")
 def orders():
+    page = request.args.get("page", 1, type=int)
     status_filter = request.args.get("status", "")
     query = Order.query
     if status_filter:
         query = query.filter_by(status=OrderStatus(status_filter))
-    orders = query.order_by(Order.created_at.desc()).all()
-    return render_template(
-        "admin/orders/list.html",
-        orders=orders,
-        status_filter=status_filter,
-        OrderStatus=OrderStatus,
-    )
+    pagination = query.order_by(Order.created_at.desc()).paginate(page=page, per_page=20, error_out=False)
+    return render_template("admin/orders/list.html", pagination=pagination, status_filter=status_filter, OrderStatus=OrderStatus)
 
 
 @admin_bp.route("/orders/<int:order_id>", methods=["GET", "POST"])
@@ -466,13 +467,14 @@ def order_detail(order_id):
 
 @admin_bp.route("/customers")
 def customers():
-    customers = (
+    page = request.args.get("page", 1, type=int)
+    pagination = (
         User.query.join(User.role)
         .filter_by(name="customer")
         .order_by(User.created_at.desc())
-        .all()
+        .paginate(page=page, per_page=20, error_out=False)
     )
-    return render_template("admin/customers/list.html", customers=customers)
+    return render_template("admin/customers/list.html", pagination=pagination)
 
 
 # --- Inventory & Reports ---

@@ -1,19 +1,18 @@
 {% extends "admin/base.html" %}
+{% from "macros.html" import render_pagination %}
 {% block title %}Customers{% endblock %}
-
-{% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@2.2.2/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-{% endblock %}
-
 {% block content %}
 <h1 class="h3 mb-4">Customers</h1>
 
+{% if pagination.total %}
+<p class="text-muted small mb-3">
+    Showing page {{ pagination.page }} of {{ pagination.pages }}
+    ({{ pagination.total }} customer{{ 's' if pagination.total != 1 else '' }})
+</p>
+{% endif %}
+
 <div class="table-responsive">
-    <table
-        id="adminCustomersTable"
-        class="table table-hover bg-white shadow-sm admin-datatable w-100"
-        data-default-sort='[[3, "desc"]]'
-    >
+    <table class="table table-hover bg-white shadow-sm">
         <thead>
             <tr>
                 <th>Username</th>
@@ -24,22 +23,22 @@
             </tr>
         </thead>
         <tbody>
-            {% for u in customers %}
+            {% for u in pagination.items %}
             <tr>
                 <td>{{ u.username }}</td>
                 <td>{{ u.email }}</td>
                 <td>{{ u.full_name }}</td>
-                <td data-order="{{ u.created_at.isoformat() }}">{{ u.created_at.strftime('%Y-%m-%d') }}</td>
-                <td data-order="{{ 1 if u.is_verified else 0 }}">{{ 'Yes' if u.is_verified else 'No' }}</td>
+                <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+                <td>{{ 'Yes' if u.is_verified else 'No' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center text-muted py-4">No customers found.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/datatables.net@2.2.2/js/dataTables.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@2.2.2/js/dataTables.bootstrap5.min.js"></script>
-<script src="{{ url_for('static', filename='js/admin-datatables.js') }}"></script>
+{{ render_pagination(pagination, 'admin.customers') }}
 {% endblock %}
