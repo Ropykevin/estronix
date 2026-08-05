@@ -1,7 +1,45 @@
 {% extends "admin/base.html" %}
 {% block title %}Customers{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@2.2.2/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 <h1 class="h3 mb-4">Customers</h1>
-<table class="table bg-white shadow-sm"><thead><tr><th>Username</th><th>Email</th><th>Name</th><th>Joined</th><th>Verified</th></tr></thead>
-<tbody>{% for u in pagination.items %}<tr><td>{{ u.username }}</td><td>{{ u.email }}</td><td>{{ u.full_name }}</td><td>{{ u.created_at.strftime('%Y-%m-%d') }}</td><td>{{ 'Yes' if u.is_verified else 'No' }}</td></tr>{% endfor %}</tbody></table>
+
+<div class="table-responsive">
+    <table
+        id="adminCustomersTable"
+        class="table table-hover bg-white shadow-sm admin-datatable w-100"
+        data-default-sort='[[3, "desc"]]'
+    >
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Joined</th>
+                <th>Verified</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in customers %}
+            <tr>
+                <td>{{ u.username }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.full_name }}</td>
+                <td data-order="{{ u.created_at.isoformat() }}">{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+                <td data-order="{{ 1 if u.is_verified else 0 }}">{{ 'Yes' if u.is_verified else 'No' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@2.2.2/js/dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@2.2.2/js/dataTables.bootstrap5.min.js"></script>
+<script src="{{ url_for('static', filename='js/admin-datatables.js') }}"></script>
 {% endblock %}

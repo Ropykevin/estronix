@@ -1,7 +1,64 @@
 {% extends "admin/base.html" %}
 {% block title %}Orders{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@2.2.2/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<h1 class="h3 mb-4">Orders</h1>
-<div class="table-responsive"><table class="table bg-white shadow-sm"><thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th><th></th></tr></thead>
-<tbody>{% for o in pagination.items %}<tr><td>{{ o.order_number }}</td><td>{{ o.user.username }}</td><td>KES {{ "{:,.0f}".format(o.total_amount) }}</td><td>{{ o.status.value }}</td><td>{{ o.created_at.strftime('%Y-%m-%d') }}</td><td><a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="btn btn-sm btn-outline-primary">Manage</a></td></tr>{% endfor %}</tbody></table></div>
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h1 class="h3 mb-0">Orders</h1>
+    <form method="get" class="d-flex gap-2 align-items-center">
+        <select name="status" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+            <option value="">All statuses</option>
+            {% for status in OrderStatus %}
+            <option value="{{ status.value }}" {% if status_filter == status.value %}selected{% endif %}>
+                {{ status.value.replace('_', ' ').title() }}
+            </option>
+            {% endfor %}
+        </select>
+        {% if status_filter %}
+        <a href="{{ url_for('admin.orders') }}" class="btn btn-sm btn-link">Clear</a>
+        {% endif %}
+    </form>
+</div>
+
+<div class="table-responsive">
+    <table
+        id="adminOrdersTable"
+        class="table table-hover bg-white shadow-sm admin-datatable w-100"
+        data-default-sort='[[4, "desc"]]'
+    >
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th class="no-sort">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for o in orders %}
+            <tr>
+                <td>{{ o.order_number }}</td>
+                <td>{{ o.user.username }}</td>
+                <td data-order="{{ o.total_amount }}">KES {{ "{:,.0f}".format(o.total_amount) }}</td>
+                <td>{{ o.status.value.replace('_', ' ').title() }}</td>
+                <td data-order="{{ o.created_at.isoformat() }}">{{ o.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>
+                    <a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="btn btn-sm btn-outline-primary">Manage</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/datatables.net@2.2.2/js/dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@2.2.2/js/dataTables.bootstrap5.min.js"></script>
+<script src="{{ url_for('static', filename='js/admin-datatables.js') }}"></script>
 {% endblock %}
