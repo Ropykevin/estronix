@@ -22,7 +22,7 @@ def build_database_url():
         raise SystemExit(f"Missing required env vars: {', '.join(missing)}")
 
     return (
-        f"postgresql://{quote_plus(user)}:{quote_plus(password)}"
+        f"postgresql+psycopg2://{quote_plus(user)}:{quote_plus(password)}"
         f"@{host}:{port}/{database}"
     )
 

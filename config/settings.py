@@ -41,15 +41,30 @@ def _env_bool(key, default="False"):
     return os.environ.get(key, default).strip().lower() in ("true", "1", "yes")
 
 
+def _normalize_database_url(url):
+    """Use psycopg2 driver (installed) — SQLAlchemy 2.x defaults postgresql:// to psycopg v3."""
+    if not url:
+        return url
+    if url.startswith("postgres://"):
+        return "postgresql+psycopg2://" + url[len("postgres://") :]
+    if url.startswith("postgresql+psycopg://") and not url.startswith("postgresql+psycopg2://"):
+        return "postgresql+psycopg2://" + url[len("postgresql+psycopg://") :]
+    if url.startswith("postgresql://"):
+        return "postgresql+psycopg2://" + url[len("postgresql://") :]
+    return url
+
+
 class Config:
     """Base configuration shared across all environments."""
 
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", SECRET_KEY)
 
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL",
-        "postgresql://estronix_user:estronix_pass@localhost:5432/estronix_db",
+    SQLALCHEMY_DATABASE_URI = _normalize_database_url(
+        os.environ.get(
+            "DATABASE_URL",
+            "postgresql://estronix_user:estronix_pass@localhost:5432/estronix_db",
+        )
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
