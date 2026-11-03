@@ -35,7 +35,8 @@
 
                     <div class="mb-3">
                         {{ form.description.label(class="form-label") }}
-                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4) }}
+                        {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=6, placeholder="One feature per line, e.g.\n6.1 inch display\n128GB storage\n5000mAh battery") }}
+                        <div class="form-text">One feature per line — shown as bullet points on the product page.</div>
                         {% for error in form.description.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                     </div>
 

@@ -1,9 +1,32 @@
+{% macro render_product_description(description, class='product-description-list text-muted mb-4') %}
+{% if description %}
+<ul class="{{ class }}">
+    {% for line in description.splitlines() %}
+    {% if line.strip() %}
+    <li>{{ line.strip().lstrip('-•* ').strip() }}</li>
+    {% endif %}
+    {% endfor %}
+</ul>
+{% endif %}
+{% endmacro %}
+
 {% macro render_product_card(product, show_new_badge=false) %}
 <div class="col-12 col-sm-6 col-lg-3">
     <article class="product-card-premium" itemscope itemtype="https://schema.org/Product">
         <meta itemprop="sku" content="{{ product.sku }}">
         <div itemprop="brand" itemscope itemtype="https://schema.org/Brand"><meta itemprop="name" content="{{ product.brand }}"></div>
         <div class="product-card-image-wrap">
+            <div class="product-card-price-overlay" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                <meta itemprop="priceCurrency" content="KES">
+                <meta itemprop="price" content="{{ product.effective_price }}">
+                <link itemprop="availability" href="https://schema.org/{% if product.is_in_stock %}InStock{% else %}OutOfStock{% endif %}">
+                {% if product.is_on_sale %}
+                <span class="product-price-old" aria-label="Original price">KES {{ "{:,.0f}".format(product.price) }}</span>
+                <span class="product-price product-price--overlay">KES {{ "{:,.0f}".format(product.discount_price) }}</span>
+                {% else %}
+                <span class="product-price product-price--overlay">KES {{ "{:,.0f}".format(product.price) }}</span>
+                {% endif %}
+            </div>
             {% if product.is_on_sale %}
             <span class="product-badge-sale" aria-label="On sale">-{{ product.discount_percentage }}%</span>
             {% endif %}
@@ -32,17 +55,6 @@
                     {% endfor %}
                 </span>
                 <span class="count">({{ product.average_rating if product.average_rating > 0 else '5.0' }})</span>
-            </div>
-            <div class="product-price-row" itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-                <meta itemprop="priceCurrency" content="KES">
-                <meta itemprop="price" content="{{ product.effective_price }}">
-                <link itemprop="availability" href="https://schema.org/{% if product.is_in_stock %}InStock{% else %}OutOfStock{% endif %}">
-                {% if product.is_on_sale %}
-                <span class="product-price-old" aria-label="Original price">KES {{ "{:,.0f}".format(product.price) }}</span>
-                <span class="product-price">KES {{ "{:,.0f}".format(product.discount_price) }}</span>
-                {% else %}
-                <span class="product-price">KES {{ "{:,.0f}".format(product.price) }}</span>
-                {% endif %}
             </div>
             {% set stock = product.stock_display %}
             <small class="stock-label stock-{{ stock.code }}">{{ stock.label }}</small>

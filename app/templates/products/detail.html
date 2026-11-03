@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "macros.html" import render_product_card, render_stars, render_whatsapp_order_btn %}
+{% from "macros.html" import render_product_card, render_product_description, render_stars, render_whatsapp_order_btn %}
 
 {% block og_type %}product{% endblock %}
 {% block og_image %}<meta property="og:image" content="{{ product.primary_image.image_url if product.primary_image else url_for('static', filename='images/placeholder-product.svg', _external=True) }}">{% endblock %}
@@ -93,6 +93,16 @@
         </div>
 
         <div class="col-lg-6 fade-up fade-up-delay-1">
+            <div class="product-detail-price-block d-flex align-items-baseline flex-wrap gap-2 mb-3">
+                {% if product.is_on_sale %}
+                <span class="product-price-old fs-5">KES {{ "{:,.0f}".format(product.price) }}</span>
+                <span class="product-price product-price--detail">KES {{ "{:,.0f}".format(product.discount_price) }}</span>
+                <span class="product-badge-sale">Save {{ product.discount_percentage }}%</span>
+                {% else %}
+                <span class="product-price product-price--detail">KES {{ "{:,.0f}".format(product.price) }}</span>
+                {% endif %}
+            </div>
+
             <span class="product-brand">{{ product.brand }}</span>
             <h1 class="section-title mt-1 mb-3" style="font-size: clamp(1.5rem, 3vw, 2rem);">{{ product.name }}</h1>
 
@@ -101,17 +111,7 @@
                 <span class="count ms-1">({{ product.average_rating if product.average_rating > 0 else '5.0' }}) · SKU: {{ product.sku }}</span>
             </div>
 
-            <div class="d-flex align-items-baseline flex-wrap gap-2 mb-4">
-                {% if product.is_on_sale %}
-                <span class="product-price-old fs-5">KES {{ "{:,.0f}".format(product.price) }}</span>
-                <span class="product-price" style="font-size: 2rem;">KES {{ "{:,.0f}".format(product.discount_price) }}</span>
-                <span class="product-badge-sale">Save {{ product.discount_percentage }}%</span>
-                {% else %}
-                <span class="product-price" style="font-size: 2rem;">KES {{ "{:,.0f}".format(product.price) }}</span>
-                {% endif %}
-            </div>
-
-            <p class="text-muted mb-4" style="line-height: 1.8;">{{ product.description }}</p>
+            {{ render_product_description(product.description) }}
 
             {% if product.warranty_info %}
             <div class="d-flex align-items-center gap-2 mb-3 p-3 rounded-3" style="background: rgba(34, 197, 94, 0.08);">

@@ -730,11 +730,38 @@ a.hero-float-card:hover {
     position: relative;
     background: var(--color-bg-soft);
     padding: 1.5rem;
+    padding-top: 2.75rem;
     overflow: hidden;
     aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.product-card-price-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    padding: 0.55rem 0.75rem;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.88) 0%, rgba(15, 23, 42, 0.55) 70%, transparent 100%);
+    pointer-events: none;
+}
+
+.product-card-price-overlay .product-price--overlay {
+    font-size: 1.05rem;
+    color: #fff;
+}
+
+.product-card-price-overlay .product-price-old {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.75rem;
 }
 
 .product-card-image-wrap img {
@@ -835,6 +862,29 @@ a.hero-float-card:hover {
     flex-wrap: wrap;
     margin-top: auto;
     margin-bottom: 1rem;
+}
+
+.product-price--detail {
+    font-size: 2rem;
+}
+
+.product-detail-price-block {
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.product-description-list {
+    padding-left: 1.25rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.75;
+}
+
+.product-description-list li {
+    margin-bottom: 0.35rem;
+}
+
+.product-description-list li::marker {
+    color: var(--color-blue);
 }
 
 .product-price {
