@@ -52,9 +52,7 @@ def list_products():
 @products_bp.route("/category/<slug>")
 def category_products(slug):
     category = Category.query.filter_by(slug=slug, is_active=True).first_or_404()
-    args = request.args.to_dict()
-    args["category"] = slug
-    filters = FilterService.parse_filters(args)
+    filters = FilterService.parse_filters(request.args, default_category_slug=slug)
     page = request.args.get("page", 1, type=int)
     query = FilterService.build_query(filters)
     pagination = query.paginate(page=page, per_page=current_app.config["ITEMS_PER_PAGE"], error_out=False)

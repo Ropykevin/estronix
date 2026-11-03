@@ -43,20 +43,49 @@ SORT_OPTIONS = {
 class FilterService:
     """Build filtered product queries with URL-param persistence."""
 
+    @staticmethod
+    def _get_arg(args, key, default=None, cast=None):
+        """Read a query param from MultiDict or plain dict."""
+        if not isinstance(args, dict) and hasattr(args, "get"):
+            if cast is not None:
+                return args.get(key, default=default, type=cast)
+            return args.get(key, default)
+        raw = args.get(key, default)
+        if raw is None or raw == "":
+            return default
+        if cast is None:
+            return raw
+        try:
+            return cast(raw)
+        except (TypeError, ValueError):
+            return default
+
+    @staticmethod
+    def _clean_str(value):
+        if value is None:
+            return None
+        text = str(value).strip()
+        return text or None
+
     @classmethod
-    def parse_filters(cls, args):
+    def parse_filters(cls, args, default_category_slug=None):
         """Parse request args / dict into filter parameters."""
+        category_slug = cls._clean_str(cls._get_arg(args, "category")) or default_category_slug
         return {
-            "search": args.get("q", "").strip() or None,
-            "category_slug": args.get("category", "").strip() or None,
-            "brand": args.get("brand", "").strip() or None,
-            "min_price": args.get("min_price", type=float),
-            "max_price": args.get("max_price", type=float),
-            "sort": args.get("sort", "newest"),
-            "in_stock": args.get("in_stock") == "1",
-            "on_sale": args.get("on_sale") == "1",
-            "min_rating": args.get("min_rating", type=int),
-            "specs": {k: args.get(f"spec_{k}", "").strip() for k in FILTER_SPECS if args.get(f"spec_{k}", "").strip()},
+            "search": cls._clean_str(cls._get_arg(args, "q")),
+            "category_slug": category_slug,
+            "brand": cls._clean_str(cls._get_arg(args, "brand")),
+            "min_price": cls._get_arg(args, "min_price", cast=float),
+            "max_price": cls._get_arg(args, "max_price", cast=float),
+            "sort": cls._clean_str(cls._get_arg(args, "sort", "newest")) or "newest",
+            "in_stock": cls._get_arg(args, "in_stock") == "1",
+            "on_sale": cls._get_arg(args, "on_sale") == "1",
+            "min_rating": cls._get_arg(args, "min_rating", cast=int),
+            "specs": {
+                k: cls._clean_str(cls._get_arg(args, f"spec_{k}"))
+                for k in FILTER_SPECS
+                if cls._clean_str(cls._get_arg(args, f"spec_{k}"))
+            },
         }
 
     @classmethod
