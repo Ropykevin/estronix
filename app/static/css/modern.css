@@ -891,6 +891,153 @@
     font-size: 1.15rem;
 }
 
+.btn-whatsapp-order--compact {
+    padding: 0.55rem 1rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+/* Sliding WhatsApp promo banner */
+.whatsapp-slide-banner {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1045;
+    transform: translateY(110%);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.18);
+    pointer-events: none;
+}
+
+.whatsapp-slide-banner.is-visible {
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.whatsapp-slide-banner-ticker {
+    overflow: hidden;
+    background: linear-gradient(90deg, #128c7e 0%, #25d366 50%, #128c7e 100%);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35rem 0;
+}
+
+.whatsapp-slide-banner-track {
+    display: flex;
+    width: max-content;
+    animation: whatsapp-banner-marquee 28s linear infinite;
+}
+
+.whatsapp-slide-banner-ticker-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 2rem;
+    white-space: nowrap;
+}
+
+.whatsapp-slide-banner-main {
+    background: #fff;
+    border-top: 1px solid var(--color-border);
+    padding: 0.75rem 0 calc(0.75rem + env(safe-area-inset-bottom, 0));
+}
+
+.whatsapp-slide-banner-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+}
+
+.whatsapp-slide-banner-copy {
+    font-size: 0.875rem;
+    color: var(--color-navy);
+    line-height: 1.4;
+    flex: 1 1 200px;
+}
+
+.whatsapp-slide-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.whatsapp-slide-banner-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-bg-soft);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.whatsapp-slide-banner-close:hover {
+    background: #e2e8f0;
+    color: var(--color-navy);
+}
+
+@keyframes whatsapp-banner-marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+body.whatsapp-banner-visible .floating-whatsapp-btn,
+body.whatsapp-banner-visible .floating-cart-btn {
+    bottom: calc(6.75rem + env(safe-area-inset-bottom, 0));
+}
+
+body.whatsapp-banner-visible .cart-toast {
+    bottom: calc(12.5rem + env(safe-area-inset-bottom, 0));
+}
+
+body.whatsapp-banner-visible:has(.product-sticky-cta) {
+    padding-bottom: 11rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .whatsapp-slide-banner-track {
+        animation: none;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .whatsapp-slide-banner-ticker-text + .whatsapp-slide-banner-ticker-text {
+        display: none;
+    }
+
+    .whatsapp-slide-banner {
+        transition: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .whatsapp-slide-banner-inner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .whatsapp-slide-banner-actions {
+        justify-content: space-between;
+    }
+
+    .btn-whatsapp-order--compact {
+        flex: 1;
+    }
+}
+
 /* Add-to-cart toast */
 .cart-toast {
     position: fixed;

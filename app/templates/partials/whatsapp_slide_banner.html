@@ -1,0 +1,45 @@
+{% if request.endpoint != 'orders.checkout' %}
+{% set wa_banner_message = 'Hi ' ~ app_name ~ ', I would like to order via WhatsApp. Please help with availability and delivery.' %}
+<div
+    id="whatsappSlideBanner"
+    class="whatsapp-slide-banner"
+    role="region"
+    aria-label="Order via WhatsApp promotion"
+    hidden
+>
+    <div class="whatsapp-slide-banner-ticker" aria-hidden="true">
+        <div class="whatsapp-slide-banner-track">
+            <span class="whatsapp-slide-banner-ticker-text">
+                <i class="bi bi-whatsapp"></i>
+                Order on WhatsApp — instant replies · M-Pesa · free delivery {{ free_delivery_area }} · genuine warranty
+            </span>
+            <span class="whatsapp-slide-banner-ticker-text">
+                <i class="bi bi-whatsapp"></i>
+                Order on WhatsApp — instant replies · M-Pesa · free delivery {{ free_delivery_area }} · genuine warranty
+            </span>
+        </div>
+    </div>
+    <div class="whatsapp-slide-banner-main">
+        <div class="container-premium whatsapp-slide-banner-inner">
+            <div class="whatsapp-slide-banner-copy">
+                <strong>Order faster on WhatsApp</strong>
+                <span class="d-none d-sm-inline">— chat with us, confirm stock &amp; pay with M-Pesa. No account required.</span>
+                <span class="d-inline d-sm-none">— chat &amp; pay with M-Pesa.</span>
+            </div>
+            <div class="whatsapp-slide-banner-actions">
+                <a
+                    href="{{ whatsapp_order_url(wa_banner_message) }}"
+                    class="btn-whatsapp-order btn-whatsapp-order--compact"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <i class="bi bi-whatsapp" aria-hidden="true"></i> Order on WhatsApp
+                </a>
+                <button type="button" class="whatsapp-slide-banner-close" id="whatsappSlideBannerClose" aria-label="Dismiss WhatsApp banner">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
