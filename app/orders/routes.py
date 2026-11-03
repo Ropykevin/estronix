@@ -1,16 +1,15 @@
 """Order and checkout routes."""
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from app.models import Order
+from app.models import Order, OrderStatus
 from app.models.payment import PaymentMethod, PaymentStatus
 from app.orders.forms import CheckoutForm
 from app.services.cart_service import CartService
 from app.services.order_service import OrderService
 from app.services.mpesa_service import MpesaService
 from app.services.whatsapp_service import WhatsAppService
-from app.utils.decorators import verified_required
 from app.utils.kenya_data import FREE_DELIVERY_AREA, NAIROBI_COUNTY, is_nairobi_cbd_delivery
 from app.utils.sanitizer import sanitize_html
 
@@ -19,7 +18,6 @@ orders_bp = Blueprint("orders", __name__)
 
 @orders_bp.route("/checkout", methods=["GET", "POST"])
 @login_required
-@verified_required
 def checkout():
     if CartService.get_cart_item_count() == 0:
         flash("Your cart is empty.", "warning")
@@ -42,9 +40,7 @@ def checkout():
     cart_items = CartService.get_cart_items()
     selected_county = form.county.data if form.county.data else None
     selected_city = form.city.data if form.city.data else None
-    shipping = OrderService.calculate_shipping(subtotal, selected_county, selected_city)
-    tax = round(float(subtotal) * 0.16, 2)
-    total = float(subtotal) + shipping + tax
+    shipping, tax, total = OrderService.calculate_order_totals(subtotal, selected_county, selected_city)
 
     if form.validate_on_submit():
         shipping_address = "\n".join(
@@ -104,7 +100,30 @@ def checkout():
 @login_required
 def confirmation(order_number):
     order = Order.query.filter_by(order_number=order_number, user_id=current_user.id).first_or_404()
-    return render_template("orders/confirmation.html", order=order)
+    mpesa_payment = (
+        order.payments.filter_by(method=PaymentMethod.MPESA).order_by(Payment.id.desc()).first()
+    )
+    return render_template(
+        "orders/confirmation.html",
+        order=order,
+        mpesa_payment=mpesa_payment,
+    )
+
+
+@orders_bp.route("/confirmation/<order_number>/status")
+@login_required
+def confirmation_status(order_number):
+    """Lightweight poll endpoint for post-checkout payment updates."""
+    order = Order.query.filter_by(order_number=order_number, user_id=current_user.id).first_or_404()
+    mpesa_payment = order.payments.filter_by(method=PaymentMethod.MPESA).order_by(Payment.id.desc()).first()
+    payload = {
+        "order_status": order.status.value,
+        "paid": order.status == OrderStatus.PAID,
+    }
+    if mpesa_payment:
+        payload["payment_status"] = mpesa_payment.status.value
+        payload["checkout_request_id"] = mpesa_payment.checkout_request_id
+    return jsonify(payload)
 
 
 @orders_bp.route("/<order_number>")

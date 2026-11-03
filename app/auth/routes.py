@@ -41,10 +41,17 @@ def register():
         db.session.commit()
 
         EmailService.send_verification_email(user)
-        flash("Account created! Please check your email to verify your account.", "success")
-        return redirect(url_for("auth.login"))
+        login_user(user)
+        flash(
+            "Account created! Complete checkout now — verify your email when you can for order updates.",
+            "success",
+        )
+        next_page = request.args.get("next")
+        if next_page and is_safe_redirect_url(next_page):
+            return redirect(next_page)
+        return redirect(url_for("main.index"))
 
-    return render_template("auth/register.html", form=form)
+    return render_template("auth/register.html", form=form, checkout_next=request.args.get("next"))
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -77,7 +84,8 @@ def login():
 
         flash("Invalid email or password.", "danger")
 
-    return render_template("auth/login.html", form=form)
+    checkout_next = request.args.get("next")
+    return render_template("auth/login.html", form=form, checkout_next=checkout_next)
 
 
 @auth_bp.route("/logout")

@@ -8,16 +8,48 @@
             </div>
             <h1 class="section-title mb-2">Order Confirmed!</h1>
             <p class="text-muted mb-4">Thank you for shopping with Estronix. Your order has been placed successfully.</p>
+
+            {% if mpesa_payment and mpesa_payment.status.value == 'pending' and order.status.value != 'paid' %}
+            <div class="alert alert-warning text-start mb-4" id="mpesaPendingAlert" role="status">
+                <strong><i class="bi bi-phone-vibrate me-1"></i> Complete M-Pesa on your phone</strong>
+                <p class="mb-0 small mt-2">Check for an STK Push prompt and enter your M-Pesa PIN. This page will update when payment is received.</p>
+            </div>
+            {% elif mpesa_payment and mpesa_payment.status.value == 'failed' %}
+            <div class="alert alert-danger text-start mb-4">
+                <strong>Payment not completed</strong>
+                <p class="mb-0 small mt-2">Your order is saved. Contact us on WhatsApp or view your order to retry payment.</p>
+            </div>
+            {% endif %}
+
             <div class="filter-panel text-start mb-4">
                 <div class="d-flex justify-content-between mb-2"><span class="text-muted">Order Number</span><strong>{{ order.order_number }}</strong></div>
-                <div class="d-flex justify-content-between mb-2"><span class="text-muted">Total</span><strong>KES {{ "{:,.2f}".format(order.total_amount) }}</strong></div>
-                <div class="d-flex justify-content-between"><span class="text-muted">Status</span><span class="badge rounded-pill" style="background: rgba(37,99,235,0.1); color: var(--color-blue);">{{ order.status.value | title }}</span></div>
+                <div class="d-flex justify-content-between mb-2"><span class="text-muted">Total</span><strong>KES {{ "{:,.0f}".format(order.total_amount) }}</strong></div>
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Status</span>
+                    <span class="badge rounded-pill" id="orderStatusBadge" style="background: rgba(37,99,235,0.1); color: var(--color-blue);">{{ order.status.value.replace('_', ' ') | title }}</span>
+                </div>
             </div>
             <div class="d-flex flex-wrap gap-2 justify-content-center">
                 <a href="{{ url_for('orders.order_detail', order_number=order.order_number) }}" class="btn-premium btn-premium-primary">View Order</a>
                 <a href="{{ url_for('orders.invoice', order_number=order.order_number) }}" class="btn-premium btn-premium-secondary">Print Invoice</a>
+                <a href="{{ url_for('products.list_products') }}" class="btn-premium btn-premium-secondary">Continue Shopping</a>
             </div>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+{% if mpesa_payment and mpesa_payment.status.value == 'pending' and order.status.value != 'paid' %}
+<script src="{{ url_for('static', filename='js/order-confirmation.js') }}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.EstronixOrderConfirmation) {
+        window.EstronixOrderConfirmation.start({
+            statusUrl: {{ url_for('orders.confirmation_status', order_number=order.order_number) | tojson }}
+        });
+    }
+});
+</script>
+{% endif %}
 {% endblock %}

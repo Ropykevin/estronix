@@ -25,6 +25,14 @@ class OrderService:
         return cls.SHIPPING_COST
 
     @classmethod
+    def calculate_order_totals(cls, subtotal, county=None, city=None):
+        """Return shipping, tax, and total (total rounded to whole KES for M-Pesa)."""
+        shipping = cls.calculate_shipping(subtotal, county, city)
+        tax = round(float(subtotal) * 0.16, 2)
+        total = round(float(subtotal) + shipping + tax)
+        return shipping, tax, total
+
+    @classmethod
     def create_order(cls, user, shipping_address, billing_address=None, customer_notes=None, payment_method="mpesa", county=None, city=None):
         cart_items = CartService.get_cart_items()
         if not cart_items:
@@ -40,9 +48,7 @@ class OrderService:
                 return None, f"Insufficient stock for {product.name}."
 
         subtotal = CartService.get_subtotal()
-        shipping = cls.calculate_shipping(subtotal, county, city)
-        tax = round(float(subtotal) * 0.16, 2)
-        total = float(subtotal) + shipping + tax
+        shipping, tax, total = cls.calculate_order_totals(subtotal, county, city)
 
         order = Order(
             order_number=Order.generate_order_number(),

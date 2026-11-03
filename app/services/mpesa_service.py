@@ -178,7 +178,7 @@ class MpesaService:
         except Exception as exc:
             raise MpesaCallbackError("Invalid callback amount") from exc
 
-        if received_amount != expected_amount:
+        if int(received_amount) != int(expected_amount):
             payment.status = PaymentStatus.FAILED
             payment.result_description = (
                 f"Amount mismatch: expected {expected_amount}, received {received_amount}"

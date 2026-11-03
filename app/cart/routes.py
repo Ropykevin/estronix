@@ -1,11 +1,11 @@
 """Shopping cart routes."""
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
-from flask_login import login_required
-
+from flask_login import current_user
 from app.models import Product
 from app.services.cart_service import CartService
 from app.services.whatsapp_service import WhatsAppService
+from app.utils.kenya_data import FREE_DELIVERY_AREA
 
 cart_bp = Blueprint("cart", __name__)
 
@@ -20,11 +20,21 @@ def view_cart():
     else:
         cart_items = items
 
+    checkout_url = (
+        url_for("orders.checkout")
+        if current_user.is_authenticated
+        else url_for("auth.login", next=url_for("orders.checkout"))
+    )
+    register_checkout_url = url_for("auth.register", next=url_for("orders.checkout"))
+
     return render_template(
         "cart/view.html",
         cart_items=cart_items,
         subtotal=subtotal,
         whatsapp_cart_url=WhatsAppService.cart_order_url(cart_items, subtotal),
+        checkout_url=checkout_url,
+        register_checkout_url=register_checkout_url,
+        free_delivery_area=FREE_DELIVERY_AREA,
         meta_title="Shopping Cart | Estronix",
     )
 
@@ -67,11 +77,19 @@ def _cart_ajax_payload(success, message, product_id=None, removed=False):
             payload["line_total"] = float(product.effective_price) * qty
 
     if success and (removed or not items):
+        checkout_url = (
+            url_for("orders.checkout")
+            if current_user.is_authenticated
+            else url_for("auth.login", next=url_for("orders.checkout"))
+        )
         payload["html"] = render_template(
             "cart/_content.html",
             cart_items=items,
             subtotal=subtotal,
             whatsapp_cart_url=WhatsAppService.cart_order_url(items, subtotal),
+            checkout_url=checkout_url,
+            register_checkout_url=url_for("auth.register", next=url_for("orders.checkout")),
+            free_delivery_area=FREE_DELIVERY_AREA,
         )
 
     return payload

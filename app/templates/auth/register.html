@@ -5,7 +5,11 @@
     <div class="container-premium">
         <div class="auth-card fade-up" style="max-width: 520px;">
             <h2>Create Account</h2>
+            {% if checkout_next and '/checkout' in checkout_next %}
+            <p class="auth-subtitle">Create an account to checkout — you'll go straight to payment after signup.</p>
+            {% else %}
             <p class="auth-subtitle">Join Estronix for exclusive deals and fast checkout</p>
+            {% endif %}
             <form method="POST" novalidate>
                 {{ form.hidden_tag() }}
                 <div class="row g-3">
@@ -43,7 +47,7 @@
                 {{ form.submit(class="btn-premium btn-premium-primary w-100 btn-premium-lg") }}
             </form>
             <p class="text-center text-muted small mt-4 mb-0">Already have an account? <a
-                    href="{{ url_for('auth.login') }}" class="fw-semibold">Sign In</a></p>
+                    href="{{ url_for('auth.login', next=checkout_next) if checkout_next else url_for('auth.login') }}" class="fw-semibold">Sign In</a></p>
         </div>
     </div>
 </section>
