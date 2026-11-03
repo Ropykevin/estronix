@@ -70,16 +70,16 @@
                 <span class="fw-bold">Subtotal</span>
                 <span class="fw-bold fs-5" style="color: var(--color-navy);" data-cart-subtotal-total>KES {{ "{:,.0f}".format(subtotal) }}</span>
             </div>
-            <a href="{{ checkout_url | default(url_for('orders.checkout')) }}" class="btn-premium btn-premium-primary w-100 mb-2">
+            {{ render_whatsapp_order_btn(whatsapp_cart_url, label='Order via WhatsApp', block=true, class='mb-2 cart-cta-whatsapp') }}
+            <p class="text-muted small text-center mb-3">Fastest option — send your cart on WhatsApp. No account needed.</p>
+            <a href="{{ checkout_url | default(url_for('orders.checkout')) }}" class="btn-premium btn-premium-secondary w-100 mb-2">
                 Proceed to Checkout <i class="bi bi-arrow-right"></i>
             </a>
             {% if not current_user.is_authenticated %}
             <p class="text-muted small text-center mb-2">
-                Sign in or <a href="{{ register_checkout_url | default(url_for('auth.register')) }}">create an account</a> — takes under a minute.
+                Online checkout: <a href="{{ register_checkout_url | default(url_for('auth.register')) }}">sign in</a> or create an account.
             </p>
             {% endif %}
-            {{ render_whatsapp_order_btn(whatsapp_cart_url, block=true, class='mb-2') }}
-            <p class="text-muted small text-center mb-0">Prefer chat? WhatsApp order is instant — no account needed.</p>
             <a href="{{ url_for('products.list_products') }}" class="btn-premium btn-premium-secondary w-100">
                 Continue Shopping
             </a>

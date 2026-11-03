@@ -1023,18 +1023,96 @@ body.whatsapp-banner-visible:has(.product-sticky-cta) {
     }
 }
 
+@media (max-width: 767.98px) {
+    body.whatsapp-banner-visible .floating-whatsapp-btn,
+    body.whatsapp-banner-visible .floating-cart-btn {
+        bottom: calc(5.5rem + env(safe-area-inset-bottom, 0));
+    }
+
+    body.whatsapp-banner-visible .cart-toast {
+        bottom: calc(10.5rem + env(safe-area-inset-bottom, 0));
+    }
+
+    body.whatsapp-banner-visible:has(.product-sticky-cta) {
+        padding-bottom: 9rem;
+    }
+}
+
 @media (max-width: 575.98px) {
+    .whatsapp-slide-banner {
+        box-shadow: 0 -6px 20px rgba(15, 23, 42, 0.12);
+    }
+
+    .whatsapp-slide-banner-ticker {
+        font-size: 0.625rem;
+        padding: 0.2rem 0;
+    }
+
+    .whatsapp-slide-banner-ticker-text {
+        gap: 0.35rem;
+        padding: 0 1.25rem;
+    }
+
+    .whatsapp-slide-banner-ticker-text .bi-whatsapp {
+        font-size: 0.7rem;
+    }
+
+    .whatsapp-slide-banner-main {
+        padding: 0.45rem 0 calc(0.45rem + env(safe-area-inset-bottom, 0));
+    }
+
     .whatsapp-slide-banner-inner {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .whatsapp-slide-banner-copy {
+        font-size: 0.75rem;
+        line-height: 1.3;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .whatsapp-slide-banner-title {
+        display: block;
+        font-size: 0.8125rem;
     }
 
     .whatsapp-slide-banner-actions {
-        justify-content: space-between;
+        gap: 0.35rem;
+        flex-shrink: 0;
     }
 
-    .btn-whatsapp-order--compact {
-        flex: 1;
+    .whatsapp-slide-banner-close {
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: 0.75rem;
+    }
+
+    .whatsapp-slide-banner .btn-whatsapp-order--compact {
+        flex: 0 1 auto;
+        padding: 0.4rem 0.65rem;
+        font-size: 0.75rem;
+        border-radius: 0.5rem;
+        gap: 0.35rem;
+    }
+
+    .whatsapp-slide-banner .btn-whatsapp-order--compact i {
+        font-size: 0.95rem;
+    }
+
+    body.whatsapp-banner-visible .floating-whatsapp-btn,
+    body.whatsapp-banner-visible .floating-cart-btn {
+        bottom: calc(4.85rem + env(safe-area-inset-bottom, 0));
+    }
+
+    body.whatsapp-banner-visible .cart-toast {
+        bottom: calc(9.25rem + env(safe-area-inset-bottom, 0));
+    }
+
+    body.whatsapp-banner-visible:has(.product-sticky-cta) {
+        padding-bottom: 8rem;
     }
 }
 
